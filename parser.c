@@ -26,11 +26,11 @@ static char *repeatChar(char c, int times)
 	return result;
 }
 
-void startParser(int maxTokenLength)
+void startParser(int tokenLength)
 {
 	// Initialize lexer
-	startTokens(maxTokenLength);
-	currentToken = (char *) malloc((maxTokenLength+1) * sizeof(char));
+	startTokens(tokenLength);
+	currentToken = (char *) malloc((tokenLength+1) * sizeof(char));
 }
 
 static void Symbol(void)
