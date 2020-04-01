@@ -7,11 +7,12 @@
 
 /**
  * startParser() - Initiates the parser
+ * @tokenLength - max token length
  *
  * Call this function before getExpression, like this:
  *    startParser();
  */
-void startParser(void);
+void startParser(int tokenLength);
 
 /**
  * getExpression() - Reads an s_expression from stdin and prints its parse
