@@ -7,10 +7,10 @@
 #include "lexer.h"
 #include "parser.h"
 
-static int indentationLevel;
-static char *currentToken;
+static int indentation_level;
+static char *current_token;
 
-static char *repeatChar(char c, int times)
+static char *repeat_char(char c, int times)
 {
 	char *result = (char *) malloc((times+1) * sizeof(char));
 
@@ -26,69 +26,69 @@ static char *repeatChar(char c, int times)
 	return result;
 }
 
-void startParser(int tokenLength)
+void start_parser(int token_length)
 {
 	// Initialize lexer
-	startTokens(tokenLength);
-	currentToken = (char *) malloc((tokenLength+1) * sizeof(char));
+	start_tokens(token_length);
+	current_token = (char *) malloc((token_length+1) * sizeof(char));
 }
 
-void freeParser(void)
+void free_parser(void)
 {
-	free(currentToken);
+	free(current_token);
 }
 
-static void Symbol(void)
+static void symbol(void)
 {
-	char *indent = repeatChar(' ', 2*indentationLevel);
+	char *indent = repeat_char(' ', 2*indentation_level);
 
-	if (currentToken[0] == '#' || currentToken[0] == '\'')
+	if (current_token[0] == '#' || current_token[0] == '\'')
 		return;
 
-	printf("%s%s\n", indent, currentToken);
+	printf("%s%s\n", indent, current_token);
 
 	free(indent);
 }
 
-static void S_Expression(void)
+static void s_expression(void)
 {
-	char *indent = (char *) malloc((2*indentationLevel+1) * sizeof(char));
+	char *indent = (char *) malloc((2*indentation_level+1) * sizeof(char));
 
-	strcpy(indent, repeatChar(' ', 2*indentationLevel));
-	printf("%sS_Expression\n", indent);
-	indentationLevel++;
+	strcpy(indent, repeat_char(' ', 2*indentation_level));
+	printf("%ss_expression\n", indent);
+	indentation_level++;
 
-	if (!strcmp(currentToken, "#t")) {
+	if (!strcmp(current_token, "#t")) {
 		printf("%s#t\n", indent);
-	} else if (!strcmp(currentToken, "#f")) {
+	} else if (!strcmp(current_token, "#f")) {
 		printf("%s#f\n", indent);
-	} else if (!strcmp(currentToken, "(")) {
+	} else if (!strcmp(current_token, "(")) {
 		// Since it starts with (, it's a list of one or more
 		// s_expressions
 		printf("%s(\n", indent);
-		strcpy(currentToken, getToken());
-		S_Expression();
+		strcpy(current_token, get_token());
+		s_expression();
 		while (1) {
-			strcpy(currentToken, getToken());
-			if (!strcmp(currentToken, ")"))
+			strcpy(current_token, get_token());
+			if (!strcmp(current_token, ")"))
 				break;
-			S_Expression();
+			s_expression();
 		}
 		printf("%s)\n", indent);
-	} else if (!strcmp(currentToken, "()")) {
+	} else if (!strcmp(current_token, "()")) {
 		// It's a list of zero s_expressions (because the lexical
 		// analyzer treats '()' as a single token)
 		printf("%s()\n", indent);
 	} else {
-		Symbol();
+		symbol();
 	}
 
 	free(indent);
-	indentationLevel--;
+	indentation_level--;
 }
 
-void getExpression(void)
+void get_expression(void)
 {
-	strcpy(currentToken, getToken());
-	S_Expression();
+	strcpy(current_token, get_token());
+	s_expression();
 }

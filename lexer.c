@@ -11,23 +11,23 @@
 static char *lexeme;
 // the current character in the input stream from the keyboard
 static char c;
-// if the previous call to getToken() required looking ahead
+// if the previous call to get_token() required looking ahead
 static int lookahead;
 
 /**
- * newToken() - Reinitializes lexeme to a string of maxLength.
+ * new_token() - Reinitializes lexeme to a string of max_length.
  *
  * De-allocates the existing lexeme and allocates a new one (a
- * maxLength-character array). This is called when startTokens() is called. The
+ * max_length-character array). This is called when start_tokens() is called. The
  * variable lexeme remains as a dynamically allocated array. If a new token
  * stream is desired, the lexeme array is re-allocated.
  */
-static void newToken(int maxLength)
+static void new_token(int max_length)
 {
 	if (lexeme != NULL)
 		free(lexeme);
 
-	lexeme = (char *) calloc(maxLength, sizeof(char));
+	lexeme = (char *) calloc(max_length, sizeof(char));
 	if (lexeme == NULL) {
 		printf("Out of memory, too many tokens.\n");
 		exit(0);
@@ -35,17 +35,17 @@ static void newToken(int maxLength)
 }
 
 /**
- * startTokens()
+ * start_tokens()
  */
-void startTokens(int maxLength)
+void start_tokens(int max_length)
 {
 	lookahead = 0;
 	lexeme = NULL;
-	newToken(maxLength);
+	new_token(max_length);
 }
 
 /**
- * getToken()
+ * get_token()
  *
  * Implementation notes: The function works by getting the first character, in
  * case the previous call required lookahead, then skipping over whitespace. The
@@ -59,7 +59,7 @@ void startTokens(int maxLength)
  *   (4) Default case: Scan for a string of characters, and return as a string
  *       (a string cannot contain any whitespace character, or "(" or ")").
  */
-char *getToken()
+char *get_token()
 {
 	int i; //local index for lexeme
 

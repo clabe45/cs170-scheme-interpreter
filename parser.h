@@ -6,29 +6,29 @@
 #include <stdlib.h>
 
 /**
- * startParser() - Initiates the parser
- * @tokenLength - max token length
+ * start_parser() - Initiates the parser
+ * @token_length - max token length
  *
- * Call this function before getExpression, like this:
- *    startParser();
+ * Call this function before get_expression, like this:
+ *    start_parser();
  */
-void startParser(int tokenLength);
+void start_parser(int token_length);
 
 /**
- * getExpression() - Reads an s_expression from stdin and prints its parse
+ * get_expression() - Reads an s_expression from stdin and prints its parse
  * tree.
  *
  * An s_expression takes the following form:
  *    <s_expression> = ( { <s_expression> } ) | #t | #f | <symbol> | ()
  *
  * Since it prints to stdout and reads from stdin, you can simply call:
- *    getExpression();
+ *    get_expression();
  */
-void getExpression(void);
+void get_expression(void);
 
 /**
- * freeParser() - Frees the memory consumed by the parser
+ * free_parser() - Frees the memory consumed by the parser
  */
-void freeParser(void);
+void free_parser(void);
 
 #endif

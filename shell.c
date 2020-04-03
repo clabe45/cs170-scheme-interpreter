@@ -12,11 +12,11 @@ main(void)
 	printf("expression and its\n");
 	printf("\"parse tree\" will be printed out. Type Ctrl-C to quit.\n");
 
-	startParser(20);
+	start_parser(20);
 
 	while (1) {
 		printf("scheme> ");
-		getExpression();
+		get_expression();
 	}
-	freeParser();
+	free_parser();
 }
