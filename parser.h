@@ -26,4 +26,9 @@ void startParser(int tokenLength);
  */
 void getExpression(void);
 
+/**
+ * freeParser() - Frees the memory consumed by the parser
+ */
+void freeParser(void);
+
 #endif

@@ -33,6 +33,11 @@ void startParser(int tokenLength)
 	currentToken = (char *) malloc((tokenLength+1) * sizeof(char));
 }
 
+void freeParser(void)
+{
+	free(currentToken);
+}
+
 static void Symbol(void)
 {
 	char *indent = repeatChar(' ', 2*indentationLevel);
@@ -41,6 +46,8 @@ static void Symbol(void)
 		return;
 
 	printf("%s%s\n", indent, currentToken);
+
+	free(indent);
 }
 
 static void S_Expression(void)
@@ -76,6 +83,7 @@ static void S_Expression(void)
 		Symbol();
 	}
 
+	free(indent);
 	indentationLevel--;
 }
 

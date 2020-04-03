@@ -18,4 +18,5 @@ main(void)
 		printf("scheme> ");
 		getExpression();
 	}
+	freeParser();
 }
