@@ -7,23 +7,42 @@
 #include "lexer.h"
 #include "parser.h"
 
-static int indentation_level;
+const struct cons_cell {
+	union s_expr *first;
+	union s_expr *rest;
+};
+
+/**
+ * s_expr - A parse tree
+ */
+union s_expr {
+	char *symbol;
+	struct cons_cell *cell;
+};
+
 static char *current_token;
 
-static char *repeat_char(char c, int times)
+static struct cons_cell *new_cons_cell()
 {
-	char *result = (char *) malloc((times+1) * sizeof(char));
+	struct cons_cell *cell = (struct cons_cell *)
+		malloc(sizeof(struct cons_cell));
+	return cell;
+}
 
-	if (result == NULL) {
-		fprintf(stderr, "error: Out of memory");
-		exit(1);
-	}
+static union s_expr *s_expr_from_symbol(char *symbol)
+{
+	union s_expr *expr = (union s_expr *) malloc(sizeof(union s_expr));
 
-	int i;
+	expr->symbol = symbol;
+	return expr;
+}
 
-	for (i = 0; i < times; i++)
-		result[i] = c;
-	return result;
+static union s_expr *s_expr_from_cons_cell(struct cons_cell *cell)
+{
+	union s_expr *expr = (union s_expr *) malloc(sizeof(union s_expr));
+
+	expr->cell = cell;
+	return expr;
 }
 
 void start_parser(int token_length)
@@ -38,57 +57,51 @@ void free_parser(void)
 	free(current_token);
 }
 
-static void symbol(void)
+static union s_expr *symbol(void)
 {
-	char *indent = repeat_char(' ', 2*indentation_level);
+	union s_expr *expr = malloc(sizeof(union s_expr));
 
-	if (current_token[0] == '#' || current_token[0] == '\'')
-		return;
-
-	printf("%s%s\n", indent, current_token);
-
-	free(indent);
+	expr->symbol = current_token;
+	return expr;
 }
 
-static void s_expression(void)
+static union s_expr *s_expression(void)
 {
-	char *indent = (char *) malloc((2*indentation_level+1) * sizeof(char));
-
-	strcpy(indent, repeat_char(' ', 2*indentation_level));
-	printf("%ss_expression\n", indent);
-	indentation_level++;
-
-	if (!strcmp(current_token, "#t")) {
-		printf("%s#t\n", indent);
-	} else if (!strcmp(current_token, "#f")) {
-		printf("%s#f\n", indent);
-	} else if (!strcmp(current_token, "(")) {
+	if (!strcmp(current_token, "(")) {
 		// Since it starts with (, it's a list of one or more
 		// s_expressions
-		printf("%s(\n", indent);
 		strcpy(current_token, get_token());
-		s_expression();
+		struct cons_cell *first = new_cons_cell();
+		struct cons_cell *curr = first;
+
+		curr->first = s_expression();
+		struct cons_cell *next = new_cons_cell();
+
+		curr->rest = s_expr_from_cons_cell(next);
+
 		while (1) {
 			strcpy(current_token, get_token());
 			if (!strcmp(current_token, ")"))
 				break;
-			s_expression();
+			curr = next;
+			curr->first = s_expression();
+			next = new_cons_cell();
+			curr->rest = s_expr_from_cons_cell(next);
 		}
-		printf("%s)\n", indent);
+		// terminator node
+		next->rest = NULL;
+		return s_expr_from_cons_cell(first);
 	} else if (!strcmp(current_token, "()")) {
 		// It's a list of zero s_expressions (because the lexical
 		// analyzer treats '()' as a single token)
-		printf("%s()\n", indent);
+		return NULL;	// terminater cons cell
 	} else {
-		symbol();
+		return symbol();
 	}
-
-	free(indent);
-	indentation_level--;
 }
 
-void get_expression(void)
+union s_expr *get_expression(void)
 {
 	strcpy(current_token, get_token());
-	s_expression();
+	return s_expression();
 }
