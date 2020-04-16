@@ -9,7 +9,7 @@
 
 const struct cons_cell {
 	struct s_expr *first;
-	struct s_expr *rest;
+	struct cons_cell *rest;
 };
 
 union s_expr_value {
@@ -87,7 +87,7 @@ static struct s_expr *s_expression(void)
 		curr->first = s_expression();
 		struct cons_cell *next = new_cons_cell();
 
-		curr->rest = s_expr_from_cons_cell(next);
+		curr->rest = next;
 
 		while (1) {
 			strcpy(current_token, get_token());
@@ -96,7 +96,7 @@ static struct s_expr *s_expression(void)
 			curr = next;
 			curr->first = s_expression();
 			next = new_cons_cell();
-			curr->rest = s_expr_from_cons_cell(next);
+			curr->rest = next;
 		}
 		// terminator node
 		next->rest = NULL;
