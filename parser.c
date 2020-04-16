@@ -23,7 +23,7 @@ enum s_expr_type { SYMBOL, CELL };
  * s_expr - A parse tree
  */
 struct s_expr {
-	union s_expr_value value;
+	union s_expr_value *value;
 	enum s_expr_type type;
 };
 
@@ -40,7 +40,9 @@ static struct s_expr *s_expr_from_symbol(char *symbol)
 {
 	struct s_expr *expr = (struct s_expr *) malloc(sizeof(struct s_expr));
 
-	expr->value.symbol = symbol;
+	expr->value = (union s_expr_value *) malloc(
+		sizeof(union s_expr_value));
+	expr->value->symbol = symbol;
 	expr->type = SYMBOL;
 	return expr;
 }
@@ -49,7 +51,9 @@ static struct s_expr *s_expr_from_cons_cell(struct cons_cell *cell)
 {
 	struct s_expr *expr = (struct s_expr *) malloc(sizeof(struct s_expr));
 
-	expr->value.cell = cell;
+	expr->value = (union s_expr_value *) malloc(
+		sizeof(union s_expr_value));
+	expr->value->cell = cell;
 	expr->type = CELL;
 	return expr;
 }
