@@ -24,7 +24,7 @@ void start_parser(int token_length);
  * Since it prints to stdout and reads from stdin, you can simply call:
  *    get_expression();
  */
-union s_expr *get_expression(void);
+struct s_expr *get_expression(void);
 
 /**
  * free_parser() - Frees the memory consumed by the parser

@@ -8,16 +8,23 @@
 #include "parser.h"
 
 const struct cons_cell {
-	union s_expr *first;
-	union s_expr *rest;
+	struct s_expr *first;
+	struct s_expr *rest;
 };
+
+union s_expr_value {
+	char *symbol;
+	struct cons_cell *cell;
+};
+
+enum s_expr_type { SYMBOL, CELL };
 
 /**
  * s_expr - A parse tree
  */
-union s_expr {
-	char *symbol;
-	struct cons_cell *cell;
+struct s_expr {
+	union s_expr_value value;
+	enum s_expr_type type;
 };
 
 static char *current_token;
@@ -29,19 +36,21 @@ static struct cons_cell *new_cons_cell()
 	return cell;
 }
 
-static union s_expr *s_expr_from_symbol(char *symbol)
+static struct s_expr *s_expr_from_symbol(char *symbol)
 {
-	union s_expr *expr = (union s_expr *) malloc(sizeof(union s_expr));
+	struct s_expr *expr = (struct s_expr *) malloc(sizeof(struct s_expr));
 
-	expr->symbol = symbol;
+	expr->value.symbol = symbol;
+	expr->type = SYMBOL;
 	return expr;
 }
 
-static union s_expr *s_expr_from_cons_cell(struct cons_cell *cell)
+static struct s_expr *s_expr_from_cons_cell(struct cons_cell *cell)
 {
-	union s_expr *expr = (union s_expr *) malloc(sizeof(union s_expr));
+	struct s_expr *expr = (struct s_expr *) malloc(sizeof(struct s_expr));
 
-	expr->cell = cell;
+	expr->value.cell = cell;
+	expr->type = CELL;
 	return expr;
 }
 
@@ -57,15 +66,12 @@ void free_parser(void)
 	free(current_token);
 }
 
-static union s_expr *symbol(void)
+static struct s_expr *symbol(void)
 {
-	union s_expr *expr = malloc(sizeof(union s_expr));
-
-	expr->symbol = current_token;
-	return expr;
+	return s_expr_from_symbol(current_token);
 }
 
-static union s_expr *s_expression(void)
+static struct s_expr *s_expression(void)
 {
 	if (!strcmp(current_token, "(")) {
 		// Since it starts with (, it's a list of one or more
@@ -100,7 +106,7 @@ static union s_expr *s_expression(void)
 	}
 }
 
-union s_expr *get_expression(void)
+struct s_expr *get_expression(void)
 {
 	strcpy(current_token, get_token());
 	return s_expression();

@@ -16,7 +16,7 @@ main(void)
 
 	while (1) {
 		printf("scheme> ");
-		union s_expr *expr = get_expression();
+		struct s_expr *expr = get_expression();
 	}
 	free_parser();
 }
