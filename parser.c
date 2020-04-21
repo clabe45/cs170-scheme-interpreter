@@ -32,13 +32,6 @@ static int token_length;
 static char *current_token;
 static struct s_expr *empty_list;
 
-static struct cons_cell *new_cons_cell()
-{
-	struct cons_cell *cell = (struct cons_cell *)
-		malloc(sizeof(struct cons_cell));
-	return cell;
-}
-
 static struct s_expr *s_expr_from_boolean(int boolean)
 {
 	struct s_expr *expr = (struct s_expr *) malloc(sizeof(struct s_expr));
@@ -119,7 +112,9 @@ static struct s_expr *s_expression(void)
 	if (!strcmp(current_token, "(")) {
 		// Since it starts with (, it's a list of one or more
 		// s_expressions
-		struct cons_cell *first = new_cons_cell();
+
+		struct cons_cell *first = (struct cons_cell *)
+			malloc(sizeof(struct cons_cell));
 		struct cons_cell *curr = first;
 		struct cons_cell *prev_curr = NULL;
 
@@ -128,7 +123,8 @@ static struct s_expr *s_expression(void)
 			if (!strcmp(current_token, ")"))
 				break;
 			curr->first = s_expression();
-			struct cons_cell *next = new_cons_cell();
+			struct cons_cell *next = (struct cons_cell *)
+				malloc(sizeof(struct cons_cell));
 
 			curr->rest = s_expr_from_cons_cell(next);
 			prev_curr = curr;
