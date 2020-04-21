@@ -70,6 +70,18 @@ static struct s_expr *s_expr_as_empty_list()
 	return expr;
 }
 
+/**
+ * is_list - Determines if the s-expression is a proper list
+ * @expr
+ */
+static int is_list(struct s_expr *expr)
+{
+	if (expr->type == CELL)
+		return is_list(expr->value->cell->rest);
+
+	return expr->type == EMPTY_LIST;
+}
+
 void start_parser(int max_token_length)
 {
 	// Initialize lexer
@@ -127,4 +139,39 @@ struct s_expr *get_expression(void)
 {
 	strcpy(current_token, get_token());
 	return s_expression();
+}
+
+static void _print_expression(struct s_expr *expr)
+{
+	if (expr->type == SYMBOL) {
+		printf(expr->value->symbol);
+	} else if (expr->type == CELL) {
+		if (is_list(expr)) {
+			printf("(");
+			struct s_expr *curr = expr;
+
+			while (curr->type != EMPTY_LIST) {
+				_print_expression(curr->value->cell->first);
+				curr = curr->value->cell->rest;
+				if (curr->type != EMPTY_LIST)
+					printf(" ");
+			}
+			printf(")");
+		} else {
+			printf("(");
+			_print_expression(expr->value->cell->first);
+			printf(" . ");
+			_print_expression(expr->value->cell->rest);
+			printf(")");
+		}
+	} else {
+		// expr is the empty list
+		printf("()");
+	}
+}
+
+void print_expression(struct s_expr *expr)
+{
+	_print_expression(expr);
+	printf("\n");
 }

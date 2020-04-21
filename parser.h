@@ -31,4 +31,10 @@ struct s_expr *get_expression(void);
  */
 void free_parser(void);
 
+/**
+ * print_expression() - Displays the parse tree of an s-expression.
+ * @expr
+ */
+void print_expression(struct s_expr *expr);
+
 #endif
