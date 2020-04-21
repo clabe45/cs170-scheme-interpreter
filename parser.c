@@ -27,6 +27,7 @@ struct s_expr {
 	enum s_expr_type type;
 };
 
+static int token_length;
 static char *current_token;
 static struct s_expr *empty_list;
 
@@ -43,7 +44,9 @@ static struct s_expr *s_expr_from_symbol(char *symbol)
 
 	expr->value = (union s_expr_value *) malloc(
 		sizeof(union s_expr_value));
-	expr->value->symbol = symbol;
+	expr->value->symbol = (char *)
+		malloc((token_length+1)*sizeof(char));
+	strcpy(expr->value->symbol, symbol);
 	expr->type = SYMBOL;
 	return expr;
 }
@@ -59,7 +62,6 @@ static struct s_expr *s_expr_from_cons_cell(struct cons_cell *cell)
 	return expr;
 }
 
-void start_parser(int token_length)
 static struct s_expr *s_expr_as_empty_list()
 {
 	struct s_expr *expr = (struct s_expr *)
@@ -67,10 +69,13 @@ static struct s_expr *s_expr_as_empty_list()
 	expr->type = EMPTY_LIST;
 	return expr;
 }
+
+void start_parser(int max_token_length)
 {
 	// Initialize lexer
-	start_tokens(token_length);
-	current_token = (char *) malloc((token_length+1) * sizeof(char));
+	start_tokens(max_token_length);
+	current_token = (char *) malloc((max_token_length+1) * sizeof(char));
+	token_length = max_token_length;
 
 	empty_list = s_expr_as_empty_list();
 }
