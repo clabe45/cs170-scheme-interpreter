@@ -17,7 +17,7 @@ union s_expr_value {
 	struct cons_cell *cell;
 };
 
-enum s_expr_type { SYMBOL, CELL };
+enum s_expr_type { SYMBOL, CELL, EMPTY_LIST };
 
 /**
  * s_expr - A parse tree
@@ -28,6 +28,7 @@ struct s_expr {
 };
 
 static char *current_token;
+static struct s_expr *empty_list;
 
 static struct cons_cell *new_cons_cell()
 {
@@ -59,10 +60,19 @@ static struct s_expr *s_expr_from_cons_cell(struct cons_cell *cell)
 }
 
 void start_parser(int token_length)
+static struct s_expr *s_expr_as_empty_list()
+{
+	struct s_expr *expr = (struct s_expr *)
+		malloc(sizeof(struct s_expr));
+	expr->type = EMPTY_LIST;
+	return expr;
+}
 {
 	// Initialize lexer
 	start_tokens(token_length);
 	current_token = (char *) malloc((token_length+1) * sizeof(char));
+
+	empty_list = s_expr_as_empty_list();
 }
 
 void free_parser(void)
@@ -98,13 +108,13 @@ static struct s_expr *s_expression(void)
 			next = new_cons_cell();
 			curr->rest = s_expr_from_cons_cell(next);
 		}
-		// terminator node
-		next->rest = NULL;
+		// Terminate list with empty list
+		next->rest = empty_list;
 		return s_expr_from_cons_cell(first);
 	} else if (!strcmp(current_token, "()")) {
 		// It's a list of zero s_expressions (because the lexical
 		// analyzer treats '()' as a single token)
-		return NULL;	// terminater cons cell
+		return empty_list;
 	} else {
 		return symbol();
 	}
