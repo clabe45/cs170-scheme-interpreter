@@ -95,26 +95,24 @@ static struct s_expr *s_expression(void)
 	if (!strcmp(current_token, "(")) {
 		// Since it starts with (, it's a list of one or more
 		// s_expressions
-		strcpy(current_token, get_token());
 		struct cons_cell *first = new_cons_cell();
 		struct cons_cell *curr = first;
-
-		curr->first = s_expression();
+		struct cons_cell *prev_curr = NULL;
 
 		while (1) {
 			strcpy(current_token, get_token());
 			if (!strcmp(current_token, ")"))
 				break;
+			curr->first = s_expression();
 			struct cons_cell *next = new_cons_cell();
 
 			curr->rest = s_expr_from_cons_cell(next);
+			prev_curr = curr;
 			curr = next;
-			curr->first = s_expression();
-			next = new_cons_cell();
-			curr->rest = s_expr_from_cons_cell(next);
 		}
 		// Terminate list with empty list
-		next->rest = empty_list;
+		prev_curr->rest = empty_list;
+		free(curr);
 		return s_expr_from_cons_cell(first);
 	} else if (!strcmp(current_token, "()")) {
 		// It's a list of zero s_expressions (because the lexical
