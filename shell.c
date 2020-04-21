@@ -9,7 +9,7 @@
 main(void)
 {
 	printf("A parser for a subset of Scheme. Type any Scheme");
-	printf("expression and its\n");
+	printf(" expression and its\n");
 	printf("\"parse tree\" will be printed out. Type Ctrl-C to quit.\n");
 
 	start_parser(20);
