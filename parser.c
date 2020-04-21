@@ -85,14 +85,14 @@ static struct s_expr *s_expression(void)
 		struct cons_cell *curr = first;
 
 		curr->first = s_expression();
-		struct cons_cell *next = new_cons_cell();
-
-		curr->rest = next;
 
 		while (1) {
 			strcpy(current_token, get_token());
 			if (!strcmp(current_token, ")"))
 				break;
+			struct cons_cell *next = new_cons_cell();
+
+			curr->rest = next;
 			curr = next;
 			curr->first = s_expression();
 			next = new_cons_cell();
