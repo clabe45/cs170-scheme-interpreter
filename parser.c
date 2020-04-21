@@ -13,11 +13,12 @@ const struct cons_cell {
 };
 
 union s_expr_value {
+	int boolean;
 	char *symbol;
 	struct cons_cell *cell;
 };
 
-enum s_expr_type { SYMBOL, CELL, EMPTY_LIST };
+enum s_expr_type { BOOLEAN, SYMBOL, CELL, EMPTY_LIST };
 
 /**
  * s_expr - A parse tree
@@ -36,6 +37,17 @@ static struct cons_cell *new_cons_cell()
 	struct cons_cell *cell = (struct cons_cell *)
 		malloc(sizeof(struct cons_cell));
 	return cell;
+}
+
+static struct s_expr *s_expr_from_boolean(int boolean)
+{
+	struct s_expr *expr = (struct s_expr *) malloc(sizeof(struct s_expr));
+
+	expr->value = (union s_expr_value *) malloc(
+		sizeof(union s_expr_value));
+	expr->value->boolean = boolean;
+	expr->type = BOOLEAN;
+	return expr;
 }
 
 static struct s_expr *s_expr_from_symbol(char *symbol)
@@ -130,6 +142,9 @@ static struct s_expr *s_expression(void)
 		// It's a list of zero s_expressions (because the lexical
 		// analyzer treats '()' as a single token)
 		return empty_list;
+	} else if (!strcmp(current_token, "#f")
+	|| !strcmp(current_token, "#t")) {
+		return s_expr_from_boolean(!strcmp(current_token, "#t"));
 	} else {
 		return symbol();
 	}
@@ -164,6 +179,8 @@ static void _print_expression(struct s_expr *expr)
 			_print_expression(expr->value->cell->rest);
 			printf(")");
 		}
+	} else if (expr->type == BOOLEAN) {
+		printf(expr->value->boolean ? "#t" : "#f");
 	} else {
 		// expr is the empty list
 		printf("()");
