@@ -7,32 +7,11 @@
 #include "lexer.h"
 #include "parser.h"
 
-const struct cons_cell {
-	struct s_expr *first;
-	struct s_expr *rest;
-};
-
-union s_expr_value {
-	int boolean;
-	char *symbol;
-	struct cons_cell *cell;
-};
-
-enum s_expr_type { BOOLEAN, SYMBOL, CELL, EMPTY_LIST };
-
-/**
- * s_expr - A parse tree
- */
-struct s_expr {
-	union s_expr_value *value;
-	enum s_expr_type type;
-};
-
 static int token_length;
 static char *current_token;
-static struct s_expr *empty_list;
+struct s_expr *empty_list;
 
-static struct s_expr *s_expr_from_boolean(int boolean)
+struct s_expr *s_expr_from_boolean(int boolean)
 {
 	struct s_expr *expr = (struct s_expr *) malloc(sizeof(struct s_expr));
 
@@ -43,7 +22,7 @@ static struct s_expr *s_expr_from_boolean(int boolean)
 	return expr;
 }
 
-static struct s_expr *s_expr_from_symbol(char *symbol)
+struct s_expr *s_expr_from_symbol(char *symbol)
 {
 	struct s_expr *expr = (struct s_expr *) malloc(sizeof(struct s_expr));
 
@@ -56,7 +35,7 @@ static struct s_expr *s_expr_from_symbol(char *symbol)
 	return expr;
 }
 
-static struct s_expr *s_expr_from_cons_cell(struct cons_cell *cell)
+struct s_expr *s_expr_from_cons_cell(struct cons_cell *cell)
 {
 	struct s_expr *expr = (struct s_expr *) malloc(sizeof(struct s_expr));
 
@@ -67,6 +46,7 @@ static struct s_expr *s_expr_from_cons_cell(struct cons_cell *cell)
 	return expr;
 }
 
+// Hidden; use the empty_list 'constant' instead.
 static struct s_expr *s_expr_as_empty_list()
 {
 	struct s_expr *expr = (struct s_expr *)
@@ -75,11 +55,7 @@ static struct s_expr *s_expr_as_empty_list()
 	return expr;
 }
 
-/**
- * is_list - Determines if the s-expression is a proper list
- * @expr
- */
-static int is_list(struct s_expr *expr)
+int is_list(struct s_expr *expr)
 {
 	if (expr->type == CELL)
 		return is_list(expr->value->cell->rest);
