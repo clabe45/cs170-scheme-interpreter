@@ -9,7 +9,7 @@
 
 const struct cons_cell {
 	struct s_expr *first;
-	struct cons_cell *rest;
+	struct s_expr *rest;
 };
 
 union s_expr_value {
@@ -92,11 +92,11 @@ static struct s_expr *s_expression(void)
 				break;
 			struct cons_cell *next = new_cons_cell();
 
-			curr->rest = next;
+			curr->rest = s_expr_from_cons_cell(next);
 			curr = next;
 			curr->first = s_expression();
 			next = new_cons_cell();
-			curr->rest = next;
+			curr->rest = s_expr_from_cons_cell(next);
 		}
 		// terminator node
 		next->rest = NULL;
