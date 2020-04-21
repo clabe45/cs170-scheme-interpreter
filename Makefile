@@ -1,3 +1,5 @@
+CFLAGS = -g
+
 scheme: shell.o parser.o lexer.o
 	gcc -o scheme shell.o parser.o lexer.o
 
