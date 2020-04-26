@@ -57,8 +57,39 @@ struct s_expr *(*function)(struct fn_arguments *))
 	last_registered_function = function_entry_node;
 }
 
+// BUILTIN FUNCTIONS
+
+static struct s_expr *list(struct fn_arguments *args)
+{
+	struct s_expr *first = empty_list;
+	struct s_expr *last = first;
+	struct fn_arguments *arg = args;
+
+	while (arg != NULL) {
+		struct cons_cell *next = (struct cons_cell *)
+			malloc(sizeof(struct cons_cell));
+
+		next->first = eval_expression(arg->value);
+		next->rest = empty_list;
+
+		struct s_expr *next_s_expr = s_expr_from_cons_cell(next);
+		if (last != empty_list) {
+			last->value->cell->rest = next_s_expr;
+			last = next_s_expr;
+		} else {
+			first = next_s_expr;
+			last = next_s_expr;
+		}
+		arg = arg->next;
+	}
+
+	return first;
+}
+
+
 void start_evaluator(void)
 {
+	register_builtin_function("list", list);
 }
 
 struct s_expr *eval_expression(struct s_expr *expr)
