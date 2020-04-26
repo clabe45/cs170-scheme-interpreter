@@ -63,6 +63,25 @@ int is_list(struct s_expr *expr)
 	return expr->type == EMPTY_LIST;
 }
 
+struct s_expr *list_append(struct s_expr *ls, struct s_expr *value)
+{
+	struct cons_cell *new_cell = (struct cons_cell *)
+		malloc(sizeof(struct cons_cell));
+	new_cell->first = value;
+	new_cell->rest = empty_list;
+
+	while (ls->type != EMPTY_LIST
+	&& ls->value->cell->rest->type != EMPTY_LIST) {
+		ls = ls->value->cell->rest;
+	}
+	struct cons_cell *last_cell = ls->value->cell;
+
+	if (last_cell == NULL)
+		return s_expr_from_cons_cell(new_cell);
+	last_cell->rest = new_cell;
+	return ls;
+}
+
 void start_parser(int max_token_length)
 {
 	// Initialize lexer

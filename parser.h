@@ -62,6 +62,13 @@ struct s_expr *s_expr_from_cons_cell(struct cons_cell *cell);
 int is_list(struct s_expr *expr);
 
 /**
+ * list_append - Adds an s-expression to a linked list
+ * @ls - the list of s-expressions
+ * @value - the item to append
+ */
+struct s_expr *list_append(struct s_expr *ls, struct s_expr *value);
+
+/**
  * start_parser() - Initiates the parser
  * @token_length - max token length
  *
