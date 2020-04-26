@@ -86,10 +86,31 @@ static struct s_expr *list(struct fn_arguments *args)
 	return first;
 }
 
+static struct s_expr *car(struct fn_arguments *args)
+{
+	if (args == NULL) {
+		// TODO: error: arity mismatch
+		return empty_list;
+	}
+	struct s_expr *ls = eval_expression(args->value);
+
+	if (args->next != NULL) {
+		// TODO: error: arity mismatch
+		return ls;
+	}
+	if (ls->type != CELL) {
+		// TODO: error: contract violation
+		return ls;
+	}
+
+	return ls->value->cell->first;
+}
+
 
 void start_evaluator(void)
 {
 	register_builtin_function("list", list);
+	register_builtin_function("car", car);
 }
 
 struct s_expr *eval_expression(struct s_expr *expr)
