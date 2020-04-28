@@ -41,6 +41,7 @@ struct s_expr *get_env(char *id)
 	while (curr != NULL) {
 		if (!strcmp(curr->id, id))
 			return curr->value;
+		curr = curr->next;
 	}
 	return NULL;
 }
