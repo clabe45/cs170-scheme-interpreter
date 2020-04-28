@@ -100,6 +100,22 @@ static struct s_expr *quote(struct fn_arguments *args)
 	return args->value;
 }
 
+static struct s_expr *cons(struct fn_arguments *args)
+{
+	if (args == NULL || args->next == NULL || args->next->next != NULL) {
+		// TODO error: arity mismatch
+		return empty_list;
+	}
+	struct s_expr *first = eval_expression(args->value);
+	struct s_expr *second = eval_expression(args->next->value);
+	struct cons_cell *cell = (struct cons_cell *)
+		malloc(sizeof(struct cons_cell));
+	cell->first = first;
+	cell->rest = second;
+
+	return s_expr_from_cons_cell(cell);
+}
+
 static struct s_expr *car(struct fn_arguments *args)
 {
 	if (args == NULL) {
@@ -160,6 +176,7 @@ void start_evaluator(void)
 {
 	register_builtin_function("list", list);
 	register_builtin_function("quote", quote);
+	register_builtin_function("cons", cons);
 	register_builtin_function("car", car);
 	register_builtin_function("cdr", cdr);
 	register_builtin_function("symbol?", is_symbol);
