@@ -265,9 +265,8 @@ static struct s_expr *cond(struct fn_arguments *args)
 			return empty_list;
 		}
 		struct s_expr *test = clause->value->cell->first;
-		// Pass as long as `test` is not #f.
-		int test_passed = !(test->type == BOOLEAN
-			&& !test->value->boolean);
+		// Pass as long as `test` is not #f or '().
+		int test_passed = !is_empty_list(test);
 		int else_clause = test->type == SYMBOL
 			&& !strcmp(test->value->symbol, "else");
 		struct s_expr *then_bodies = clause->value->cell->rest;
