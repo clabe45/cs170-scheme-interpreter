@@ -204,7 +204,7 @@ struct s_expr *eval_expression(struct s_expr *expr)
 	struct fn_arguments *first_arg = NULL;
 	struct fn_arguments *last_arg = first_arg;
 
-	while (item->type != EMPTY_LIST) {
+	while (!is_empty_list(item)) {
 		struct fn_arguments *new = (struct fn_arguments *)
 			malloc(sizeof(struct fn_arguments));
 

@@ -79,8 +79,8 @@ struct s_expr *list_append(struct s_expr *ls, struct s_expr *value)
 	struct s_expr *new_cell_expr = s_expr_from_cons_cell(new_cell);
 	struct s_expr *ls_end = ls;
 
-	while (ls_end->type != EMPTY_LIST
-	&& ls_end->value->cell->rest->type != EMPTY_LIST) {
+	while (!is_empty_list(ls_end)
+	&& !is_empty_list(ls_end->value->cell->rest)) {
 		ls_end = ls_end->value->cell->rest;
 	}
 	struct cons_cell *last_cell = ls_end->value->cell;
@@ -165,10 +165,10 @@ static void _print_expression(struct s_expr *expr)
 			printf("(");
 			struct s_expr *curr = expr;
 
-			while (curr->type != EMPTY_LIST) {
+			while (!is_empty_list(curr)) {
 				_print_expression(curr->value->cell->first);
 				curr = curr->value->cell->rest;
-				if (curr->type != EMPTY_LIST)
+				if (!is_empty_list(curr))
 					printf(" ");
 			}
 			printf(")");
