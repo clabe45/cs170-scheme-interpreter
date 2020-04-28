@@ -186,7 +186,7 @@ struct s_expr *eval_expression(struct s_expr *expr)
 {
 	if (!is_list(expr))
 		return expr;
-	if (expr->type == EMPTY_LIST) {
+	if (is_empty_list(expr)) {
 		// TODO error: missing procedure expression
 		return expr;
 	}

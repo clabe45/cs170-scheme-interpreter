@@ -56,6 +56,12 @@ struct s_expr *s_expr_from_symbol(char *symbol);
 struct s_expr *s_expr_from_cons_cell(struct cons_cell *cell);
 
 /**
+ * is_empty_list - Determines if the s-expression is the empty list
+ * @expr - the expression to test
+ */
+int is_empty_list(struct s_expr *expr);
+
+/**
  * is_list - Determines if the s-expression is a proper list
  * @expr - the expression to test
  */

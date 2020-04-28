@@ -55,12 +55,19 @@ static struct s_expr *s_expr_as_empty_list()
 	return expr;
 }
 
+int is_empty_list(struct s_expr *expr)
+{
+	if (expr->type == BOOLEAN)
+		return !expr->value->boolean;	// #f
+	return expr->type == EMPTY_LIST;	// '()
+}
+
 int is_list(struct s_expr *expr)
 {
 	if (expr->type == CELL)
 		return is_list(expr->value->cell->rest);
 
-	return expr->type == EMPTY_LIST;
+	return is_empty_list(expr);
 }
 
 struct s_expr *list_append(struct s_expr *ls, struct s_expr *value)
