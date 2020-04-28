@@ -76,12 +76,13 @@ struct s_expr *list_append(struct s_expr *ls, struct s_expr *value)
 		malloc(sizeof(struct cons_cell));
 	new_cell->first = value;
 	new_cell->rest = empty_list;
+	struct s_expr *ls_end = ls;
 
-	while (ls->type != EMPTY_LIST
-	&& ls->value->cell->rest->type != EMPTY_LIST) {
-		ls = ls->value->cell->rest;
+	while (ls_end->type != EMPTY_LIST
+	&& ls_end->value->cell->rest->type != EMPTY_LIST) {
+		ls_end = ls_end->value->cell->rest;
 	}
-	struct cons_cell *last_cell = ls->value->cell;
+	struct cons_cell *last_cell = ls_end->value->cell;
 
 	if (last_cell == NULL)
 		return s_expr_from_cons_cell(new_cell);
