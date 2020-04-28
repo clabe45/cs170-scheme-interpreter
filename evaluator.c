@@ -84,6 +84,38 @@ static struct s_expr *list(struct fn_arguments *args)
 	return first;
 }
 
+static struct s_expr *append(struct fn_arguments *args)
+{
+	struct s_expr *result = empty_list;
+	struct fn_arguments *arg = args;
+
+	while (arg != NULL) {
+		struct s_expr *curr = eval_expression(arg->value);
+
+		if (is_list(curr)) {
+			struct s_expr *curr_item = curr;
+
+			while (!is_empty_list(curr_item)) {
+				result = list_append(result,
+					curr_item->value->cell->first);
+				curr_item = curr_item->value->cell->rest;
+			}
+		} else {
+			if (arg->next != NULL || arg == args) {
+				// Only the last argument can be a non-list.
+				// Additionally, the first argument must be a list.
+				// TODO error: type mismatch (expecting list, found ...)
+				return empty_list;
+			}
+			// result must be a non-empty list.
+			// Make result an improper list.
+			result->value->cell->rest = curr;
+		}
+		arg = arg->next;
+	}
+	return result;
+}
+
 static struct s_expr *quote(struct fn_arguments *args)
 {
 	if (args == NULL) {
@@ -175,6 +207,7 @@ static struct s_expr *is_symbol(struct fn_arguments *args)
 void start_evaluator(void)
 {
 	register_builtin_function("list", list);
+	register_builtin_function("append", append);
 	register_builtin_function("quote", quote);
 	register_builtin_function("cons", cons);
 	register_builtin_function("car", car);
