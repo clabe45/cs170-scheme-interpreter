@@ -119,9 +119,8 @@ struct s_expr *eval_expression(struct s_expr *expr)
 		// TODO error: missing procedure expression
 		return expr;
 	}
-	struct s_expr *first = expr->value->cell->first;
-	// Consume first element in array
-	struct s_expr *item = expr->value->cell->rest;
+	struct s_expr *first = expr->value->cell->first; // name
+	struct s_expr *item = expr->value->cell->rest; // args
 
 	if (first->type != SYMBOL) {
 		// TODO error: not a procedure
@@ -145,6 +144,7 @@ struct s_expr *eval_expression(struct s_expr *expr)
 			last_arg = new;
 		} else {
 			last_arg->next = new;
+			last_arg = new;
 		}
 
 		item = item->value->cell->rest; // cdr
