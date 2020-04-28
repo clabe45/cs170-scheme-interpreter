@@ -247,6 +247,55 @@ static struct s_expr *assoc(struct fn_arguments *args)
 	return result;
 }
 
+static struct s_expr *cond(struct fn_arguments *args)
+{
+	if (args == NULL) {
+		// TODO return #<void>
+		return empty_list;
+	}
+	if (args->next != NULL) {
+		// TODO error: arity mismatch
+	}
+	struct fn_arguments *arg = args;
+
+	while (args != NULL) {
+		struct s_expr *clause = args->value;
+		if (!is_list(clause) || list_length(clause) < 2) {
+			// TODO error
+			return empty_list;
+		}
+		struct s_expr *test = clause->value->cell->first;
+		// Pass as long as `test` is not #f.
+		int test_passed = !(test->type == BOOLEAN
+			&& !test->value->boolean);
+		int else_clause = test->type == SYMBOL
+			&& !strcmp(test->value->symbol, "else");
+		struct s_expr *then_bodies = clause->value->cell->rest;
+
+		if (test_passed || else_clause) {
+			if (else_clause && args->next != NULL) {
+				// TODO error (else has to be the last clause)
+				return empty_list;
+			}
+			// Evaluate then bodies in order and return the result of
+			// the last one.
+			while (!is_empty_list(then_bodies)) {
+				struct s_expr *result = eval_expression(
+					then_bodies->value->cell->first);
+
+				if (is_empty_list(then_bodies->value->cell->rest))
+					return result;
+				then_bodies = then_bodies->value->cell->rest;
+			}
+			// Since there are at least two elements, this comment will
+			// never be reached.
+		}
+		args = args->next;
+	}
+	// TODO return #<void>
+	return empty_list;
+}
+
 
 void start_evaluator(void)
 {
@@ -261,6 +310,7 @@ void start_evaluator(void)
 	register_builtin_function("symbol?", is_symbol);
 	register_builtin_function("equal?", are_equal);
 	register_builtin_function("assoc", assoc);
+	register_builtin_function("cond", cond);
 }
 
 struct s_expr *eval_expression(struct s_expr *expr)
