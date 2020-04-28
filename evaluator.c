@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "parser.h"
+#include "environment.h"
 #include "evaluator.h"
 
 static struct fn_arguments {
@@ -295,6 +296,24 @@ static struct s_expr *cond(struct fn_arguments *args)
 	return empty_list;
 }
 
+struct s_expr *define_(struct fn_arguments *args)
+{
+	if (args == NULL || args->next == NULL
+	|| args->next->next != NULL) {
+		// TODO error: arity mismatch
+		return empty_list;
+	}
+	struct s_expr *id = args->value;
+	struct s_expr *value = eval_expression(args->next->value);
+
+	if (id->type != SYMBOL) {
+		// TODO error: type error (expected symbol)
+		return empty_list;
+	}
+	set_env(id->value->symbol, value);
+	return id;
+}
+
 
 void start_evaluator(void)
 {
@@ -310,12 +329,11 @@ void start_evaluator(void)
 	register_builtin_function("equal?", are_equal);
 	register_builtin_function("assoc", assoc);
 	register_builtin_function("cond", cond);
+	register_builtin_function("define", define_);
 }
 
-struct s_expr *eval_expression(struct s_expr *expr)
+static struct s_expr *eval_list(struct s_expr *expr)
 {
-	if (!is_list(expr))
-		return expr;
 	if (is_empty_list(expr)) {
 		// TODO error: missing procedure expression
 		return expr;
@@ -363,5 +381,27 @@ struct s_expr *eval_expression(struct s_expr *expr)
 	}
 
 	// TODO: error: undefined
+	return expr;
+}
+
+static struct s_expr *eval_symbol(struct s_expr *expr)
+{
+	struct s_expr *value = get_env(expr->value->symbol);
+
+	if (value == NULL) {
+		// TODO error: no definition for symbol
+		return empty_list;
+	}
+	return value;
+}
+
+struct s_expr *eval_expression(struct s_expr *expr)
+{
+	if (is_list(expr))
+		return eval_list(expr);
+	if (expr->type == SYMBOL)
+		return eval_symbol(expr);
+
+	// Must be a boolean
 	return expr;
 }
