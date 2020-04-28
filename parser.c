@@ -121,6 +121,36 @@ int equal(struct s_expr *a, struct s_expr *b)
 		&& equal(a->value->cell->rest, b->value->cell->rest);
 }
 
+int is_assoc_list(struct s_expr *expr)
+{
+	if (!is_list(expr))
+		return 0;
+	struct s_expr *item = expr;
+
+	// Check if each item is a list containing two elements.
+	while (!is_empty_list(item)) {
+		if (!is_list(item->value->cell->first)
+		|| list_length(item->value->cell->first) != 2)
+			return 0;
+		item = item->value->cell->rest;
+	}
+	return 1;
+}
+
+struct s_expr *assoc_list_get(struct s_expr *expr, struct s_expr *key)
+{
+	struct s_expr *current = expr;
+
+	while (!is_empty_list(current)) {
+		struct s_expr *assoc = current->value->cell->first;
+
+		if (equal(assoc->value->cell->first, key))
+			return assoc;
+		current = current->value->cell->rest;
+	}
+	return NULL;
+}
+
 void start_parser(int max_token_length)
 {
 	// Initialize lexer

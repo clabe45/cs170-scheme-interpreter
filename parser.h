@@ -88,6 +88,20 @@ struct s_expr *list_append(struct s_expr *ls, struct s_expr *value);
 int equal(struct s_expr *a, struct s_expr *b);
 
 /**
+ * is_assoc_list - Determines whether the given s-expression is an assocation list
+ * @expr - the s-expression
+ */
+int is_assoc_list(struct s_expr *expr);
+
+/**
+ * assoc_list_get - Retrieves the value of `key` in `assoc_ls`
+ * @assoc_ls - the association list
+ * @key - the key of the assocation
+ * @return - the value of the assocation, or NULL
+ */
+struct s_expr *assoc_list_get(struct s_expr *expr, struct s_expr *key);
+
+/**
  * start_parser() - Initiates the parser
  * @token_length - max token length
  *
