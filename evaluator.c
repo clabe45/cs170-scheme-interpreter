@@ -226,6 +226,27 @@ static struct s_expr *are_equal(struct fn_arguments *args)
 	return s_expr_from_boolean(equal(a, b));
 }
 
+static struct s_expr *assoc(struct fn_arguments *args)
+{
+	if (args == NULL || args->next == NULL || args->next->next != NULL) {
+		// TODO error: arity mismatch
+		return empty_list;
+	}
+	struct s_expr* key = eval_expression(args->value);
+	struct s_expr* assoc_list = eval_expression(args->next->value);
+
+	if (!is_assoc_list(assoc_list)) {
+		// TODO error: type mismatch (expecting assocation list, found
+		// ...)
+		return assoc_list;
+	}
+	struct s_expr *result = assoc_list_get(assoc_list, key);
+
+	if (result == NULL)
+		return s_expr_from_boolean(0);
+	return result;
+}
+
 
 void start_evaluator(void)
 {
@@ -239,6 +260,7 @@ void start_evaluator(void)
 	register_builtin_function("cdr", cdr);
 	register_builtin_function("symbol?", is_symbol);
 	register_builtin_function("equal?", are_equal);
+	register_builtin_function("assoc", assoc);
 }
 
 struct s_expr *eval_expression(struct s_expr *expr)
