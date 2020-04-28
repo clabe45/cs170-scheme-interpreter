@@ -75,6 +75,13 @@ int is_list(struct s_expr *expr);
 struct s_expr *list_append(struct s_expr *ls, struct s_expr *value);
 
 /**
+ * equal - Returns whether the two s-expressions have equal value
+ * @a
+ * @b
+ */
+int equal(struct s_expr *a, struct s_expr *b);
+
+/**
  * start_parser() - Initiates the parser
  * @token_length - max token length
  *

@@ -93,6 +93,23 @@ struct s_expr *list_append(struct s_expr *ls, struct s_expr *value)
 	return ls;
 }
 
+int equal(struct s_expr *a, struct s_expr *b)
+{
+	if (a->type != b->type)
+		return 0;
+	enum s_expr_type type = a->type;
+
+	if (type == EMPTY_LIST)
+		return 1;
+	if (type == BOOLEAN)
+		return a->value->boolean == b->value->boolean;
+	if (type == SYMBOL)
+		return !strcmp(a->value->symbol, b->value->symbol);
+	// They're cons cells
+	return equal(a->value->cell->first, b->value->cell->first)
+		&& equal(a->value->cell->rest, b->value->cell->rest);
+}
+
 void start_parser(int max_token_length)
 {
 	// Initialize lexer
