@@ -70,6 +70,17 @@ int is_list(struct s_expr *expr)
 	return is_empty_list(expr);
 }
 
+int list_length(struct s_expr *ls)
+{
+	int length = 0;
+
+	while (!is_empty_list(ls)) {
+		length++;
+		ls = ls->value->cell->rest;
+	}
+	return length;
+}
+
 struct s_expr *list_append(struct s_expr *ls, struct s_expr *value)
 {
 	struct cons_cell *new_cell = (struct cons_cell *)

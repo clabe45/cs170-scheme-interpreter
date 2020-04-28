@@ -68,6 +68,12 @@ int is_empty_list(struct s_expr *expr);
 int is_list(struct s_expr *expr);
 
 /**
+ * list_length - Returns the length of an s-expression list
+ * @ls - the list
+ */
+int list_length(struct s_expr *expr);
+
+/**
  * list_append - Adds an s-expression to a linked list
  * @ls - the list of s-expressions
  * @value - the item to append
