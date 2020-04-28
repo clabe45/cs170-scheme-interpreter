@@ -83,10 +83,12 @@ struct s_expr *list_append(struct s_expr *ls, struct s_expr *value)
 	&& !is_empty_list(ls_end->value->cell->rest)) {
 		ls_end = ls_end->value->cell->rest;
 	}
+
+	if (is_empty_list(ls_end))
+		return new_cell_expr;
+	// If ls is a non-empty list, ls_end is a cons cell.
 	struct cons_cell *last_cell = ls_end->value->cell;
 
-	if (last_cell == NULL)
-		return new_cell_expr;
 	last_cell->rest = new_cell_expr;
 	return ls;
 }
