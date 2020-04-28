@@ -16,7 +16,7 @@ main(void)
 	printf("\"parse tree\" will be printed out. Type Ctrl-C to quit.\n");
 
 	start_parser(TOKEN_SIZE);
-	start_evaluator(TOKEN_SIZE);
+	start_evaluator();
 
 	while (1) {
 		printf("scheme> ");
