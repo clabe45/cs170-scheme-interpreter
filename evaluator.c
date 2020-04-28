@@ -84,6 +84,22 @@ static struct s_expr *list(struct fn_arguments *args)
 	return first;
 }
 
+static struct s_expr *quote(struct fn_arguments *args)
+{
+	if (args == NULL) {
+		// TODO error: arity mismatch
+		return empty_list;
+	}
+
+	if (args->next != NULL) {
+		// TODO error: arity mismatch
+		return args->value;
+	}
+
+	// Don't evaluate args->value; treat it as a literal.
+	return args->value;
+}
+
 static struct s_expr *car(struct fn_arguments *args)
 {
 	if (args == NULL) {
@@ -108,6 +124,7 @@ static struct s_expr *car(struct fn_arguments *args)
 void start_evaluator(void)
 {
 	register_builtin_function("list", list);
+	register_builtin_function("quote", quote);
 	register_builtin_function("car", car);
 }
 
