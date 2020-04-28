@@ -84,6 +84,17 @@ static struct s_expr *list(struct fn_arguments *args)
 	return first;
 }
 
+static struct s_expr *is_empty(struct fn_arguments *args)
+{
+	if (args == NULL || args->next != NULL) {
+		// TODO error: arity mismatch
+		return empty_list;
+	}
+	struct s_expr *value = eval_expression(args->value);
+
+	return s_expr_from_boolean(is_empty_list(value));
+}
+
 static struct s_expr *append(struct fn_arguments *args)
 {
 	struct s_expr *result = empty_list;
@@ -207,6 +218,8 @@ static struct s_expr *is_symbol(struct fn_arguments *args)
 void start_evaluator(void)
 {
 	register_builtin_function("list", list);
+	register_builtin_function("empty?", is_empty);
+	register_builtin_function("null?", is_empty);
 	register_builtin_function("append", append);
 	register_builtin_function("quote", quote);
 	register_builtin_function("cons", cons);
