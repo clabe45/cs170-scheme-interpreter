@@ -140,6 +140,21 @@ static struct s_expr *cdr(struct fn_arguments *args)
 	return ls->value->cell->rest;
 }
 
+static struct s_expr *is_symbol(struct fn_arguments *args)
+{
+	if (args == NULL) {
+		// TODO: error: arity mismatch
+		return empty_list;
+	}
+	struct s_expr *ls = eval_expression(args->value);
+
+	if (args->next != NULL) {
+		// TODO: error: arity mismatch
+		return ls;
+	}
+	return s_expr_from_boolean(args->value->type == SYMBOL);
+}
+
 
 void start_evaluator(void)
 {
@@ -147,6 +162,7 @@ void start_evaluator(void)
 	register_builtin_function("quote", quote);
 	register_builtin_function("car", car);
 	register_builtin_function("cdr", cdr);
+	register_builtin_function("symbol?", is_symbol);
 }
 
 struct s_expr *eval_expression(struct s_expr *expr)
