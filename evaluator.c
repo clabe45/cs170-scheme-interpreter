@@ -46,15 +46,13 @@ struct s_expr *(*function)(struct fn_arguments *))
 	function_entry_node->next = NULL;
 	if (builtin_functions == NULL) {
 		// Create first node in list.
-		builtin_functions = (struct builtin_fn_list *)
-			malloc(sizeof(struct builtin_fn_list));
-		builtin_functions->value = function_entry;
-		builtin_functions->next = NULL;
+		builtin_functions = function_entry_node;
+		last_registered_function = function_entry_node;
 	} else {
 		// Append node to list.
 		last_registered_function->next = function_entry_node;
+		last_registered_function = function_entry_node;
 	}
-	last_registered_function = function_entry_node;
 }
 
 // BUILTIN FUNCTIONS
