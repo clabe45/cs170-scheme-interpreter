@@ -214,6 +214,35 @@ static struct s_expr *is_symbol(struct fn_arguments *args)
 	return s_expr_from_boolean(args->value->type == SYMBOL);
 }
 
+static int equal(struct s_expr *a, struct s_expr *b)
+{
+	if (a->type != b->type)
+		return 0;
+	enum s_expr_type type = a->type;
+
+	if (type == EMPTY_LIST)
+		return 1;
+	if (type == BOOLEAN)
+		return a->value->boolean == b->value->boolean;
+	if (type == SYMBOL)
+		return !strcmp(a->value->symbol, b->value->symbol);
+	// They're cons cells
+	return equal(a->value->cell->first, b->value->cell->first)
+		&& equal(a->value->cell->rest, b->value->cell->rest);
+}
+
+static struct s_expr *are_equal(struct fn_arguments *args)
+{
+	if (args == NULL || args->next == NULL || args->next->next != NULL) {
+		// TODO error: arity mismatch
+		return empty_list;
+	}
+	struct s_expr *a = eval_expression(args->value);
+	struct s_expr *b = eval_expression(args->next->value);
+
+	return s_expr_from_boolean(equal(a, b));
+}
+
 
 void start_evaluator(void)
 {
@@ -226,6 +255,7 @@ void start_evaluator(void)
 	register_builtin_function("car", car);
 	register_builtin_function("cdr", cdr);
 	register_builtin_function("symbol?", is_symbol);
+	register_builtin_function("equal?", are_equal);
 }
 
 struct s_expr *eval_expression(struct s_expr *expr)
