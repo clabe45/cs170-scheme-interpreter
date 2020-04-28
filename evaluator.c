@@ -16,7 +16,7 @@ static struct builtin_fn {
 	char *name;
 	// A function that takes any number of s_expr s and returns a single
 	// s_expr.
-	struct s_expr *(*function)(struct fn_arguments *);
+	struct s_expr *(*function)(struct fn_arguments *args);
 };
 
 static struct builtin_fn_list {
@@ -25,9 +25,9 @@ static struct builtin_fn_list {
 };
 
 // Start of linked list
-static struct builtin_fn_list *builtin_functions = NULL;
+static struct builtin_fn_list *builtin_functions;
 // End of linked list
-static struct builtin_fn_list *last_registered_function = NULL;
+static struct builtin_fn_list *last_registered_function;
 
 static void register_builtin_function(char *name,
 struct s_expr *(*function)(struct fn_arguments *))
@@ -69,8 +69,8 @@ static struct s_expr *list(struct fn_arguments *args)
 
 		next->first = eval_expression(arg->value);
 		next->rest = empty_list;
-
 		struct s_expr *next_s_expr = s_expr_from_cons_cell(next);
+
 		if (last != empty_list) {
 			last->value->cell->rest = next_s_expr;
 			last = next_s_expr;
