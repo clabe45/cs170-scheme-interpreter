@@ -8,6 +8,27 @@
 #include "environment.h"
 #include "evaluator.h"
 
+static char *last_error_message;
+
+static void set_error_message(char *message)
+{
+	if (last_error_message != NULL)
+		free(last_error_message);
+	last_error_message = (char *)
+		malloc((strlen(message)+1) * sizeof(char));
+
+	strcpy(last_error_message, message);
+}
+
+int get_eval_error(char *buffer, int buffer_size)
+{
+	if (strlen(last_error_message) > buffer_size)
+		return 0;
+
+	strcpy(buffer, last_error_message);
+	return 1;
+}
+
 static struct fn_arguments {
 	struct s_expr *value;
 	struct fn_arguments *next;
@@ -61,8 +82,8 @@ struct s_expr *(*function)(struct fn_arguments *))
 static struct s_expr *exit_(struct fn_arguments *args)
 {
 	if (args != NULL) {
-		// TODO error: arity mismatch (too many arguments)
-		return empty_list;
+		set_error_message("exit - arity mismatch");
+		return NULL;
 	}
 
 	exit(0);
@@ -98,8 +119,8 @@ static struct s_expr *list(struct fn_arguments *args)
 static struct s_expr *is_empty(struct fn_arguments *args)
 {
 	if (args == NULL || args->next != NULL) {
-		// TODO error: arity mismatch
-		return empty_list;
+		set_error_message("null? - arity mismatch");
+		return NULL;
 	}
 	struct s_expr *value = eval_expression(args->value);
 
@@ -127,8 +148,9 @@ static struct s_expr *append(struct fn_arguments *args)
 				// Only the last argument can be a non-list.
 				// Additionally, the first argument must be a
 				// list.
-				// TODO error: type mismatch (expecting list)
-				return empty_list;
+				set_error_message(
+					"append - type mismatch (expecting list)");
+				return NULL;
 			}
 			// result must be a non-empty list.
 			// Make result an improper list.
@@ -141,14 +163,9 @@ static struct s_expr *append(struct fn_arguments *args)
 
 static struct s_expr *quote(struct fn_arguments *args)
 {
-	if (args == NULL) {
-		// TODO error: arity mismatch
-		return empty_list;
-	}
-
-	if (args->next != NULL) {
-		// TODO error: arity mismatch
-		return args->value;
+	if (args == NULL || args->next != NULL) {
+		set_error_message("quote - arity mismatch");
+		return NULL;
 	}
 
 	// Don't evaluate args->value; treat it as a literal.
@@ -158,8 +175,8 @@ static struct s_expr *quote(struct fn_arguments *args)
 static struct s_expr *cons(struct fn_arguments *args)
 {
 	if (args == NULL || args->next == NULL || args->next->next != NULL) {
-		// TODO error: arity mismatch
-		return empty_list;
+		set_error_message("cons - arity mismatch");
+		return NULL;
 	}
 	struct s_expr *first = eval_expression(args->value);
 	struct s_expr *second = eval_expression(args->next->value);
@@ -173,19 +190,15 @@ static struct s_expr *cons(struct fn_arguments *args)
 
 static struct s_expr *car(struct fn_arguments *args)
 {
-	if (args == NULL) {
-		// TODO: error: arity mismatch
-		return empty_list;
+	if (args == NULL || args->next != NULL) {
+		set_error_message("car - arity mismatch");
+		return NULL;
 	}
 	struct s_expr *ls = eval_expression(args->value);
 
-	if (args->next != NULL) {
-		// TODO: error: arity mismatch
-		return ls;
-	}
 	if (ls->type != CELL) {
-		// TODO: error: contract violation
-		return ls;
+		set_error_message("car - type error (expected cons cell)");
+		return NULL;
 	}
 
 	return ls->value->cell->first;
@@ -193,19 +206,15 @@ static struct s_expr *car(struct fn_arguments *args)
 
 static struct s_expr *cdr(struct fn_arguments *args)
 {
-	if (args == NULL) {
-		// TODO: error: arity mismatch
-		return empty_list;
+	if (args == NULL || args->next != NULL) {
+		set_error_message("cdr - arity mismatch");
+		return NULL;
 	}
 	struct s_expr *ls = eval_expression(args->value);
 
-	if (args->next != NULL) {
-		// TODO: error: arity mismatch
-		return ls;
-	}
 	if (ls->type != CELL) {
-		// TODO: error: contract violation
-		return ls;
+		set_error_message("cdr - type error (expected cons cell)");
+		return NULL;
 	}
 
 	return ls->value->cell->rest;
@@ -213,24 +222,20 @@ static struct s_expr *cdr(struct fn_arguments *args)
 
 static struct s_expr *is_symbol(struct fn_arguments *args)
 {
-	if (args == NULL) {
-		// TODO: error: arity mismatch
-		return empty_list;
+	if (args == NULL || args->next != NULL) {
+		set_error_message("symbol? - arity mismatch");
+		return NULL;
 	}
 	struct s_expr *ls = eval_expression(args->value);
 
-	if (args->next != NULL) {
-		// TODO: error: arity mismatch
-		return ls;
-	}
 	return s_expr_from_boolean(args->value->type == SYMBOL);
 }
 
 static struct s_expr *are_equal(struct fn_arguments *args)
 {
 	if (args == NULL || args->next == NULL || args->next->next != NULL) {
-		// TODO error: arity mismatch
-		return empty_list;
+		set_error_message("equal? - arity mismatch");
+		return NULL;
 	}
 	struct s_expr *a = eval_expression(args->value);
 	struct s_expr *b = eval_expression(args->next->value);
@@ -241,15 +246,15 @@ static struct s_expr *are_equal(struct fn_arguments *args)
 static struct s_expr *assoc(struct fn_arguments *args)
 {
 	if (args == NULL || args->next == NULL || args->next->next != NULL) {
-		// TODO error: arity mismatch
-		return empty_list;
+		set_error_message("assoc - arity mismatch");
+		return NULL;
 	}
 	struct s_expr *key = eval_expression(args->value);
 	struct s_expr *assoc_list = eval_expression(args->next->value);
 
 	if (!is_assoc_list(assoc_list)) {
-		// TODO error: type mismatch (expecting assocation list, found
-		// ...)
+		set_error_message(
+			"assoc - type error (expecting associative list)");
 		return assoc_list;
 	}
 	struct s_expr *result = assoc_list_get(assoc_list, key);
@@ -266,17 +271,23 @@ static struct s_expr *cond(struct fn_arguments *args)
 		return empty_list;
 	}
 	if (args->next != NULL) {
-		// TODO error: arity mismatch
-		return empty_list;
+		set_error_message("cond - arity mismatch");
+		return NULL;
 	}
 	struct fn_arguments *arg = args;
 
 	while (args != NULL) {
 		struct s_expr *clause = args->value;
 
-		if (!is_list(clause) || list_length(clause) < 2) {
-			// TODO error
-			return empty_list;
+		if (!is_list(clause)) {
+			set_error_message("cond - type error (expected list)");
+			return NULL;
+		}
+		if (list_length(clause) < 2) {
+			set_error_message(
+				"cond - value error (expected at least two elements in clause)"
+			);
+			return NULL;
 		}
 		struct s_expr *test = clause->value->cell->first;
 		int else_clause = test->type == SYMBOL
@@ -290,8 +301,9 @@ static struct s_expr *cond(struct fn_arguments *args)
 
 		if (test_passed || else_clause) {
 			if (else_clause && args->next != NULL) {
-				// TODO error (else has to be the last clause)
-				return empty_list;
+				set_error_message(
+					"cond - syntax error (else must be the last clause)");
+				return NULL;
 			}
 			// Evaluate then bodies in order and return the result
 			// of the last one.
@@ -318,15 +330,15 @@ struct s_expr *define_(struct fn_arguments *args)
 {
 	if (args == NULL || args->next == NULL
 	|| args->next->next != NULL) {
-		// TODO error: arity mismatch
-		return empty_list;
+		set_error_message("define - arity mismatch");
+		return NULL;
 	}
 	struct s_expr *id = args->value;
 	struct s_expr *value = eval_expression(args->next->value);
 
 	if (id->type != SYMBOL) {
-		// TODO error: type error (expected symbol)
-		return empty_list;
+		set_error_message("define - type error (expected symbol)");
+		return NULL;
 	}
 	set_env(id->value->symbol, value);
 	return id;
@@ -354,15 +366,15 @@ void start_evaluator(void)
 static struct s_expr *eval_list(struct s_expr *expr)
 {
 	if (is_empty_list(expr)) {
-		// TODO error: missing procedure expression
-		return expr;
+		set_error_message("syntax error (missing procedure expression");
+		return NULL;
 	}
 	struct s_expr *first = expr->value->cell->first; // name
 	struct s_expr *item = expr->value->cell->rest; // args
 
 	if (first->type != SYMBOL) {
-		// TODO error: not a procedure
-		return expr;
+		set_error_message("type error (expected symbol)");
+		return NULL;
 	}
 	char *name = (char *) malloc(
 		(strlen(first->value->symbol)+1) * sizeof(char));
@@ -399,8 +411,8 @@ static struct s_expr *eval_list(struct s_expr *expr)
 		curr = curr->next;
 	}
 
-	// TODO: error: undefined
-	return expr;
+	set_error_message("reference error (undefined builtin)");
+	return NULL;
 }
 
 static struct s_expr *eval_symbol(struct s_expr *expr)
@@ -408,8 +420,8 @@ static struct s_expr *eval_symbol(struct s_expr *expr)
 	struct s_expr *value = get_env(expr->value->symbol);
 
 	if (value == NULL) {
-		// TODO error: no definition for symbol
-		return empty_list;
+		set_error_message("reference error (undefined symbol)");
+		return NULL;
 	}
 	return value;
 }

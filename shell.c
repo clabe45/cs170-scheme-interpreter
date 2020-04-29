@@ -22,7 +22,14 @@ main(void)
 		printf("scheme> ");
 		struct s_expr *input = get_expression();
 		struct s_expr *result = eval_expression(input);
-		print_expression(result);
+		if (result == NULL) {
+			char error[128];
+			get_eval_error(error, 128);
+			fprintf(stderr, error);
+			fprintf(stderr, "\n");
+		} else {
+			print_expression(result);
+		}
 	}
 	free_parser();
 }
