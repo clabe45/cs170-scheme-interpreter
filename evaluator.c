@@ -58,6 +58,16 @@ struct s_expr *(*function)(struct fn_arguments *))
 
 // BUILTIN FUNCTIONS
 
+static struct s_expr *exit_(struct fn_arguments *args)
+{
+	if (args != NULL) {
+		// TODO error: arity mismatch (too many arguments)
+		return empty_list;
+	}
+
+	exit(0);
+}
+
 static struct s_expr *list(struct fn_arguments *args)
 {
 	struct s_expr *first = empty_list;
@@ -317,6 +327,7 @@ struct s_expr *define_(struct fn_arguments *args)
 
 void start_evaluator(void)
 {
+	register_builtin_function("exit", exit_);
 	register_builtin_function("list", list);
 	register_builtin_function("empty?", is_empty);
 	register_builtin_function("null?", is_empty);
