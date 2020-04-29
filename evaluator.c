@@ -125,8 +125,9 @@ static struct s_expr *append(struct fn_arguments *args)
 		} else {
 			if (arg->next != NULL || arg == args) {
 				// Only the last argument can be a non-list.
-				// Additionally, the first argument must be a list.
-				// TODO error: type mismatch (expecting list, found ...)
+				// Additionally, the first argument must be a
+				// list.
+				// TODO error: type mismatch (expecting list)
 				return empty_list;
 			}
 			// result must be a non-empty list.
@@ -243,8 +244,8 @@ static struct s_expr *assoc(struct fn_arguments *args)
 		// TODO error: arity mismatch
 		return empty_list;
 	}
-	struct s_expr* key = eval_expression(args->value);
-	struct s_expr* assoc_list = eval_expression(args->next->value);
+	struct s_expr *key = eval_expression(args->value);
+	struct s_expr *assoc_list = eval_expression(args->next->value);
 
 	if (!is_assoc_list(assoc_list)) {
 		// TODO error: type mismatch (expecting assocation list, found
@@ -266,11 +267,13 @@ static struct s_expr *cond(struct fn_arguments *args)
 	}
 	if (args->next != NULL) {
 		// TODO error: arity mismatch
+		return empty_list;
 	}
 	struct fn_arguments *arg = args;
 
 	while (args != NULL) {
 		struct s_expr *clause = args->value;
+
 		if (!is_list(clause) || list_length(clause) < 2) {
 			// TODO error
 			return empty_list;
@@ -290,18 +293,20 @@ static struct s_expr *cond(struct fn_arguments *args)
 				// TODO error (else has to be the last clause)
 				return empty_list;
 			}
-			// Evaluate then bodies in order and return the result of
-			// the last one.
+			// Evaluate then bodies in order and return the result
+			// of the last one.
 			while (!is_empty_list(then_bodies)) {
 				struct s_expr *result = eval_expression(
 					then_bodies->value->cell->first);
+				struct s_expr *rest =
+					then_bodies->value->cell->rest;
 
-				if (is_empty_list(then_bodies->value->cell->rest))
+				if (is_empty_list(rest))
 					return result;
-				then_bodies = then_bodies->value->cell->rest;
+				then_bodies = rest;
 			}
-			// Since there are at least two elements, this comment will
-			// never be reached.
+			// Since there are at least two elements, this comment
+			// will never be reached.
 		}
 		args = args->next;
 	}
