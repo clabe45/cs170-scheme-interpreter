@@ -10,13 +10,28 @@ const struct cons_cell {
 	struct s_expr *rest;
 };
 
+const struct lambda {
+	char **args;
+	int arg_count;
+	struct s_expr *body;
+};
+
+struct builtin_function {
+	char *name;
+	// A function that takes any number of s_expr s and returns a single
+	// s_expr.
+	struct s_expr *(*function)(struct fn_arguments *args);
+};
+
 union s_expr_value {
 	int boolean;
 	char *symbol;
 	struct cons_cell *cell;
+	struct lambda *lambda;
+	struct builtin_function *builtin;
 };
 
-enum s_expr_type { BOOLEAN, SYMBOL, CELL, EMPTY_LIST };
+enum s_expr_type { BOOLEAN, SYMBOL, CELL, EMPTY_LIST, LAMBDA, BUILTIN };
 
 /**
  * s_expr - A parse tree
@@ -56,6 +71,23 @@ struct s_expr *s_expr_from_symbol(char *symbol);
 struct s_expr *s_expr_from_cons_cell(struct cons_cell *cell);
 
 /**
+ * s_expr_from_lambda - Util method for creating a lambda s-expression
+ * @lmb - the lambda object
+ *
+ * Creates an s_expr of type LAMBDA.
+ */
+struct s_expr *s_expr_from_lambda(struct lambda *lmb);
+
+/**
+ * s_expr_from_builtin - Util method for creating an s-expression for a builtin
+ * function
+ * @lmb - the lambda object
+ *
+ * Creates an s_expr of type BUILTIN.
+ */
+struct s_expr *s_expr_from_builtin(struct builtin_function *builtin);
+
+/**
  * is_empty_list - Determines if the s-expression is the empty list
  * @expr - the expression to test
  */
@@ -79,6 +111,12 @@ int list_length(struct s_expr *expr);
  * @value - the item to append
  */
 struct s_expr *list_append(struct s_expr *ls, struct s_expr *value);
+
+/**
+ * is_function - Determines if the s-expression is a builtin function or lambda
+ * @expr - the expression to test
+ */
+int is_function(struct s_expr *expr);
 
 /**
  * equal - Returns whether the two s-expressions have equal value

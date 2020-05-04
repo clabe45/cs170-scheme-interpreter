@@ -46,6 +46,30 @@ struct s_expr *s_expr_from_cons_cell(struct cons_cell *cell)
 	return expr;
 }
 
+struct s_expr *s_expr_from_lambda(struct lambda *lmb)
+{
+	struct s_expr *expr = (struct s_expr *)
+		malloc(sizeof(struct s_expr));
+
+	expr->type = LAMBDA;
+	expr->value = (union s_expr_value *) malloc(
+		sizeof(union s_expr_value));
+	expr->value->lambda = lmb;
+	return expr;
+}
+
+struct s_expr *s_expr_from_builtin(struct builtin_function *builtin)
+{
+	struct s_expr *expr = (struct s_expr *)
+		malloc(sizeof(struct s_expr));
+
+	expr->type = BUILTIN;
+	expr->value = (union s_expr_value *) malloc(
+		sizeof(union s_expr_value));
+	expr->value->builtin = builtin;
+	return expr;
+}
+
 // Hidden; use the empty_list 'constant' instead.
 static struct s_expr *s_expr_as_empty_list()
 {
@@ -102,6 +126,11 @@ struct s_expr *list_append(struct s_expr *ls, struct s_expr *value)
 
 	last_cell->rest = new_cell_expr;
 	return ls;
+}
+
+int is_function(struct s_expr *expr)
+{
+	return expr->type == BUILTIN || expr->type == LAMBDA;
 }
 
 int equal(struct s_expr *a, struct s_expr *b)
@@ -241,6 +270,10 @@ static void _print_expression(struct s_expr *expr)
 		}
 	} else if (expr->type == BOOLEAN) {
 		printf(expr->value->boolean ? "#t" : "#f");
+	} else if (expr->type == LAMBDA) {
+		printf("<lambda>");
+	} else if (expr->type == BUILTIN) {
+		printf("<built-in function %s>", expr->value->builtin->name);
 	} else {
 		// expr is the empty list
 		printf("()");

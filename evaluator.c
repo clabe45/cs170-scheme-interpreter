@@ -34,47 +34,18 @@ static struct fn_arguments {
 	struct fn_arguments *next;
 };
 
-static struct builtin_fn {
-	char *name;
-	// A function that takes any number of s_expr s and returns a single
-	// s_expr.
-	struct s_expr *(*function)(struct fn_arguments *args);
-};
-
-static struct builtin_fn_list {
-	struct builtin_fn *value;
-	struct builtin_fn_list *next;
-};
-
-// Start of linked list
-static struct builtin_fn_list *builtin_functions;
-// End of linked list
-static struct builtin_fn_list *last_registered_function;
-
 static void register_builtin_function(char *name,
 struct s_expr *(*function)(struct fn_arguments *))
 {
-	struct builtin_fn *function_entry = (struct builtin_fn *)
-		malloc(sizeof(struct builtin_fn));
+	struct builtin_function *function_entry = (struct builtin_function *)
+		malloc(sizeof(struct builtin_function));
 
 	function_entry->name = (char *) malloc(
 		(strlen(name)+1) * sizeof(char));
 	strcpy(function_entry->name, name);
-	function_entry->function = function;
-	struct builtin_fn_list *function_entry_node = (struct builtin_fn_list *)
-		malloc(sizeof(struct builtin_fn_list));
+	function_entry->function = *function;
 
-	function_entry_node->value = function_entry;
-	function_entry_node->next = NULL;
-	if (builtin_functions == NULL) {
-		// Create first node in list.
-		builtin_functions = function_entry_node;
-		last_registered_function = function_entry_node;
-	} else {
-		// Append node to list.
-		last_registered_function->next = function_entry_node;
-		last_registered_function = function_entry_node;
-	}
+	set_env(name, s_expr_from_builtin(function_entry));
 }
 
 // BUILTIN FUNCTIONS
@@ -326,6 +297,49 @@ static struct s_expr *cond(struct fn_arguments *args)
 	return empty_list;
 }
 
+struct s_expr *lambda_(struct fn_arguments *args)
+{
+	if (args == NULL || args->next == NULL
+	|| args->next->next != NULL) {
+		set_error_message("lambda - arity mismatch");
+		return NULL;
+	}
+	struct s_expr *arg_names = args->value;
+	struct s_expr *body = args->next->value; // don't evaluate
+
+	if (!is_list(arg_names)) {
+		set_error_message("lambda - type error (arguments must be a list)");
+		return NULL;
+	}
+	int arg_count = list_length(arg_names);
+	char **arg_list = (char **) malloc(
+		arg_count * (sizeof(char *)));
+	struct s_expr *tmp = arg_names;
+	int i = 0;
+
+	while (!is_empty_list(tmp)) {
+		struct s_expr *arg = tmp->value->cell->first;
+
+		if (arg->type != SYMBOL) {
+			set_error_message(
+				"lambda - type error (each argument must be a symbol)");
+			return NULL;
+		}
+		arg_list[i] = (char *) malloc(
+			(strlen(arg->value->symbol)+1) * sizeof(char));
+		strcpy(arg_list[i], arg->value->symbol);
+		tmp = tmp->value->cell->rest;
+		i++;
+	}
+	struct lambda *lmb = (struct lambda *)
+		malloc(sizeof(struct lambda));
+
+	lmb->args = arg_list;
+	lmb->arg_count = arg_count;
+	lmb->body = body;
+	return s_expr_from_lambda(lmb);
+}
+
 struct s_expr *define_(struct fn_arguments *args)
 {
 	if (args == NULL || args->next == NULL
@@ -360,34 +374,21 @@ void start_evaluator(void)
 	register_builtin_function("equal?", are_equal);
 	register_builtin_function("assoc", assoc);
 	register_builtin_function("cond", cond);
+	register_builtin_function("lambda", lambda_);
 	register_builtin_function("define", define_);
 }
 
-static struct s_expr *eval_list(struct s_expr *expr)
+static struct fn_arguments *read_arguments(struct s_expr *start)
 {
-	if (is_empty_list(expr)) {
-		set_error_message("syntax error (missing procedure expression");
-		return NULL;
-	}
-	struct s_expr *first = expr->value->cell->first; // name
-	struct s_expr *item = expr->value->cell->rest; // args
-
-	if (first->type != SYMBOL) {
-		set_error_message("type error (expected symbol)");
-		return NULL;
-	}
-	char *name = (char *) malloc(
-		(strlen(first->value->symbol)+1) * sizeof(char));
-
-	strcpy(name, first->value->symbol);
+	struct s_expr *curr = start;
 	struct fn_arguments *first_arg = NULL;
 	struct fn_arguments *last_arg = first_arg;
 
-	while (!is_empty_list(item)) {
+	while (!is_empty_list(curr)) {
 		struct fn_arguments *new = (struct fn_arguments *)
 			malloc(sizeof(struct fn_arguments));
 
-		new->value = item->value->cell->first; // car
+		new->value = curr->value->cell->first; // car
 		new->next = NULL;
 		if (first_arg == NULL) {
 			first_arg = new;
@@ -397,22 +398,32 @@ static struct s_expr *eval_list(struct s_expr *expr)
 			last_arg = new;
 		}
 
-		item = item->value->cell->rest; // cdr
+		curr = curr->value->cell->rest; // cdr
 	}
+	return first_arg;
+}
 
-	// Evaluate list by calling function
-	struct builtin_fn_list *curr = builtin_functions;
-
-	while (curr != NULL) {
-		struct builtin_fn *builtin = curr->value;
-
-		if (!strcmp(name, builtin->name))
-			return (*(builtin->function))(first_arg);
-		curr = curr->next;
+static struct s_expr *eval_list(struct s_expr *expr)
+{
+	if (is_empty_list(expr)) {
+		set_error_message("syntax error (missing procedure expression)");
+		return NULL;
 	}
+	struct s_expr *first = eval_expression(expr->value->cell->first); // name or lambda
+	struct s_expr *rest = expr->value->cell->rest; // args
 
-	set_error_message("reference error (undefined builtin)");
-	return NULL;
+	if (!is_function(first)) {
+		set_error_message("type error (expected function)");
+		return NULL;
+	}
+	struct fn_arguments *args = read_arguments(rest);
+
+	if (first->type == BUILTIN) {
+		first->value->builtin->function(args);
+	} else {
+		// first is a lambda expression, so evaluate its body
+		return eval_expression(first->value->lambda->body);
+	}
 }
 
 static struct s_expr *eval_symbol(struct s_expr *expr)
@@ -433,6 +444,6 @@ struct s_expr *eval_expression(struct s_expr *expr)
 	if (expr->type == SYMBOL)
 		return eval_symbol(expr);
 
-	// Must be a boolean
+	// Return itself
 	return expr;
 }
