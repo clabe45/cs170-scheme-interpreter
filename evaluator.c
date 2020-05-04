@@ -71,6 +71,7 @@ static struct s_expr *list(struct fn_arguments *args)
 			malloc(sizeof(struct cons_cell));
 
 		next->first = eval_expression(arg->value);
+		if (next->first == NULL) return NULL;
 		next->rest = empty_list;
 		struct s_expr *next_s_expr = s_expr_from_cons_cell(next);
 
@@ -94,6 +95,7 @@ static struct s_expr *is_empty(struct fn_arguments *args)
 		return NULL;
 	}
 	struct s_expr *value = eval_expression(args->value);
+	if (value == NULL) return NULL;
 
 	return s_expr_from_boolean(is_empty_list(value));
 }
@@ -105,6 +107,7 @@ static struct s_expr *append(struct fn_arguments *args)
 
 	while (arg != NULL) {
 		struct s_expr *curr = eval_expression(arg->value);
+		if (curr == NULL) return NULL;
 
 		if (is_list(curr)) {
 			struct s_expr *curr_item = curr;
@@ -151,6 +154,8 @@ static struct s_expr *cons(struct fn_arguments *args)
 	}
 	struct s_expr *first = eval_expression(args->value);
 	struct s_expr *second = eval_expression(args->next->value);
+	if (first == NULL || second == NULL) return NULL;
+
 	struct cons_cell *cell = (struct cons_cell *)
 		malloc(sizeof(struct cons_cell));
 	cell->first = first;
@@ -166,6 +171,7 @@ static struct s_expr *car(struct fn_arguments *args)
 		return NULL;
 	}
 	struct s_expr *ls = eval_expression(args->value);
+	if (ls == NULL) return NULL;
 
 	if (ls->type != CELL) {
 		set_error_message("car - type error (expected cons cell)");
@@ -182,6 +188,7 @@ static struct s_expr *cdr(struct fn_arguments *args)
 		return NULL;
 	}
 	struct s_expr *ls = eval_expression(args->value);
+	if (ls == NULL) return NULL;
 
 	if (ls->type != CELL) {
 		set_error_message("cdr - type error (expected cons cell)");
@@ -198,6 +205,7 @@ static struct s_expr *is_symbol(struct fn_arguments *args)
 		return NULL;
 	}
 	struct s_expr *ls = eval_expression(args->value);
+	if (ls == NULL) return NULL;
 
 	return s_expr_from_boolean(args->value->type == SYMBOL);
 }
@@ -211,6 +219,7 @@ static struct s_expr *are_equal(struct fn_arguments *args)
 	struct s_expr *a = eval_expression(args->value);
 	struct s_expr *b = eval_expression(args->next->value);
 
+	if (a == NULL || b == NULL) return NULL;
 	return s_expr_from_boolean(equal(a, b));
 }
 
@@ -223,6 +232,8 @@ static struct s_expr *assoc(struct fn_arguments *args)
 	struct s_expr *key = eval_expression(args->value);
 	struct s_expr *assoc_list = eval_expression(args->next->value);
 
+	if (key == NULL || assoc_list == NULL)
+		return NULL;
 	if (!is_assoc_list(assoc_list)) {
 		set_error_message(
 			"assoc - type error (expecting associative list)");
@@ -264,8 +275,10 @@ static struct s_expr *cond(struct fn_arguments *args)
 		int else_clause = test->type == SYMBOL
 			&& !strcmp(test->value->symbol, "else");
 
-		if (!else_clause)
+		if (!else_clause) {
 			test = eval_expression(test);
+			if (test == NULL) return NULL;
+		}
 		// Pass as long as `test` is not #f or '().
 		int test_passed = !is_empty_list(test);
 		struct s_expr *then_bodies = clause->value->cell->rest;
@@ -284,6 +297,7 @@ static struct s_expr *cond(struct fn_arguments *args)
 				struct s_expr *rest =
 					then_bodies->value->cell->rest;
 
+				if (result == NULL) return NULL;
 				if (is_empty_list(rest))
 					return result;
 				then_bodies = rest;
@@ -350,6 +364,7 @@ struct s_expr *define_(struct fn_arguments *args)
 	struct s_expr *id = args->value;
 	struct s_expr *value = eval_expression(args->next->value);
 
+	if (value == NULL) return NULL;
 	if (id->type != SYMBOL) {
 		set_error_message("define - type error (expected symbol)");
 		return NULL;
@@ -412,6 +427,7 @@ static struct s_expr *eval_list(struct s_expr *expr)
 	struct s_expr *first = eval_expression(expr->value->cell->first); // name or lambda
 	struct s_expr *rest = expr->value->cell->rest; // args
 
+	if (first == NULL) return NULL;
 	if (!is_function(first)) {
 		set_error_message("type error (expected function)");
 		return NULL;
