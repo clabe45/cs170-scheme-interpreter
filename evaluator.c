@@ -421,8 +421,34 @@ static struct s_expr *eval_list(struct s_expr *expr)
 	if (first->type == BUILTIN) {
 		first->value->builtin->function(args);
 	} else {
-		// first is a lambda expression, so evaluate its body
-		return eval_expression(first->value->lambda->body);
+		// first is a lambda expression
+		struct lambda *lmb = first->value->lambda;
+
+		// Prepare local environment
+		push_env();
+		int i;
+		struct fn_arguments *arg = args;
+
+		for (i = 0; i < lmb->arg_count; i++) {
+			if (arg == NULL) {
+				// Not enough arguments passed to lambda
+				set_error_message("lambda - arity mismatch");
+				return NULL;
+			}
+			set_env(lmb->args[i], arg->value);
+			arg = arg->next;
+		}
+		if (arg != NULL) {
+			// Too many arguments passed to lambda
+			set_error_message("lambda - arity mismatch");
+			return NULL;
+		}
+
+		// Evaluate function body
+		struct s_expr *ret = eval_expression(lmb->body);
+
+		pop_env();
+		return ret;
 	}
 }
 
