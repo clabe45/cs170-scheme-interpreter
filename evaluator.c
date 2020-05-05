@@ -265,11 +265,6 @@ static struct s_expr *cond(struct fn_arguments *args)
 		// TODO return #<void>
 		return empty_list;
 	}
-	if (args->next != NULL) {
-		set_error_message("cond - arity mismatch");
-		return NULL;
-	}
-	struct fn_arguments *arg = args;
 
 	while (args != NULL) {
 		struct s_expr *clause = args->value;
