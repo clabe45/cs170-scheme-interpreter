@@ -283,13 +283,14 @@ static struct s_expr *multiply(struct fn_arguments *args)
 static struct s_expr *and(struct fn_arguments *args)
 {
 	if (args == NULL) {
-		// return #t
+		// no arguments; return #t
 		return s_expr_from_boolean(1);
 	}
 
+	// Return the last truthy value, or #f
 	struct fn_arguments *arg = args;
-
 	struct s_expr *val;
+
 	while (arg != NULL) {
 		val = eval_expression(arg->value);
 
