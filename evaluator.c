@@ -433,6 +433,18 @@ struct s_expr *define_(struct fn_arguments *args)
 	return NULL;
 }
 
+static struct s_expr *is_function_(struct fn_arguments *args)
+{
+	if (args == NULL || args->next != NULL) {
+		set_error_message("function? - arity mismatch");
+		return NULL;
+	}
+	struct s_expr *val = eval_expression(args->value);
+
+	return s_expr_from_boolean(
+		is_function(val));
+}
+
 
 void start_evaluator(void)
 {
@@ -452,6 +464,7 @@ void start_evaluator(void)
 	register_builtin_function("cond", cond);
 	register_builtin_function("lambda", lambda_);
 	register_builtin_function("define", define_);
+	register_builtin_function("function?", is_function_);
 }
 
 static struct fn_arguments *read_arguments(struct s_expr *start)
