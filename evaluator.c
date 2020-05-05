@@ -589,6 +589,7 @@ static struct s_expr *eval_list(struct s_expr *expr)
 		for (i = 0; i < lmb->arg_count; i++) {
 			if (arg == NULL) {
 				// Not enough arguments passed to lambda
+				pop_env();
 				set_error_message("lambda - arity mismatch");
 				return NULL;
 			}
@@ -597,6 +598,7 @@ static struct s_expr *eval_list(struct s_expr *expr)
 		}
 		if (arg != NULL) {
 			// Too many arguments passed to lambda
+			pop_env();
 			set_error_message("lambda - arity mismatch");
 			return NULL;
 		}
