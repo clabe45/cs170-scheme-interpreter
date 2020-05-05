@@ -228,6 +228,41 @@ static struct s_expr *add(struct fn_arguments *args)
 	return s_expr_from_integer(sum);
 }
 
+static struct s_expr *subtract(struct fn_arguments *args)
+{
+	if (args == NULL) {
+		set_error_message("- - arity mismatch");
+		return NULL;
+	}
+	struct s_expr *first = eval_expression(args->value);
+
+	if (first->type != INTEGER) {
+		set_error_message("- - type error (expected integer)");
+		return NULL;
+	}
+	if (args->next == NULL) {
+		return s_expr_from_integer(
+			- first->value->integer
+		);
+	}
+	// Subtract the rest from the first.
+	int difference = 0;
+	struct fn_arguments *arg = args->next;
+
+	difference += first->value->integer;
+	while (arg != NULL) {
+		struct s_expr *curr = eval_expression(arg->value);
+
+		if (curr->type != INTEGER) {
+			set_error_message("- - type error (expected integer)");
+			return NULL;
+		}
+		difference -= curr->value->integer;
+		arg = arg->next;
+	}
+	return s_expr_from_integer(difference);
+}
+
 static struct s_expr *is_symbol(struct fn_arguments *args)
 {
 	if (args == NULL || args->next != NULL) {
@@ -471,6 +506,7 @@ void start_evaluator(void)
 	register_builtin_function("car", car);
 	register_builtin_function("cdr", cdr);
 	register_builtin_function("+", add);
+	register_builtin_function("-", subtract);
 	register_builtin_function("symbol?", is_symbol);
 	register_builtin_function("equal?", are_equal);
 	register_builtin_function("assoc", assoc);
