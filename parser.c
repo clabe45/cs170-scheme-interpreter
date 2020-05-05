@@ -22,6 +22,17 @@ struct s_expr *s_expr_from_boolean(int boolean)
 	return expr;
 }
 
+struct s_expr *s_expr_from_integer(int integer)
+{
+	struct s_expr *expr = (struct s_expr *) malloc(sizeof(struct s_expr));
+
+	expr->value = (union s_expr_value *) malloc(
+		sizeof(union s_expr_value));
+	expr->value->integer = integer;
+	expr->type = INTEGER;
+	return expr;
+}
+
 struct s_expr *s_expr_from_symbol(char *symbol)
 {
 	struct s_expr *expr = (struct s_expr *) malloc(sizeof(struct s_expr));
@@ -202,6 +213,12 @@ static struct s_expr *symbol(void)
 
 static struct s_expr *s_expression(void)
 {
+	char *tmp = (char *) malloc(
+		(strlen(current_token)+1) * sizeof(char));
+
+	strcpy(tmp, current_token);
+	int integer = strtol(tmp, &tmp, 10);
+
 	if (!strcmp(current_token, "(")) {
 		// Since it starts with (, it's a list of one or more
 		// s_expressions
@@ -234,6 +251,9 @@ static struct s_expr *s_expression(void)
 	} else if (!strcmp(current_token, "#f")
 	|| !strcmp(current_token, "#t")) {
 		return s_expr_from_boolean(!strcmp(current_token, "#t"));
+	} else if (*tmp == '\0') {
+		// It's an integer (see top of function)
+		return s_expr_from_integer(integer);
 	} else {
 		return symbol();
 	}
@@ -270,6 +290,8 @@ static void _print_expression(struct s_expr *expr)
 		}
 	} else if (expr->type == BOOLEAN) {
 		printf(expr->value->boolean ? "#t" : "#f");
+	} else if (expr->type == INTEGER) {
+		printf("%d", expr->value->integer);
 	} else if (expr->type == LAMBDA) {
 		printf("<lambda %s>", expr->value->lambda->name);
 	} else if (expr->type == BUILTIN) {

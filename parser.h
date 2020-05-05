@@ -26,13 +26,14 @@ struct builtin_function {
 
 union s_expr_value {
 	int boolean;
+	int integer;
 	char *symbol;
 	struct cons_cell *cell;
 	struct lambda *lambda;
 	struct builtin_function *builtin;
 };
 
-enum s_expr_type { BOOLEAN, SYMBOL, CELL, EMPTY_LIST, LAMBDA, BUILTIN };
+enum s_expr_type { BOOLEAN, INTEGER, SYMBOL, CELL, EMPTY_LIST, LAMBDA, BUILTIN };
 
 /**
  * s_expr - A parse tree
@@ -54,6 +55,15 @@ struct s_expr *empty_list;
  * Creates an s_expr of type BOOLEAN with the value `boolean`.
  */
 struct s_expr *s_expr_from_boolean(int boolean);
+
+/**
+ * s_expr_from_integer - Util method for creating an integer s-expression
+ * @integer - the value of the new s-expression
+ *
+ * Creates an s_expr of type INTEGER with the value `integer`.
+ */
+struct s_expr *s_expr_from_integer(int integer);
+
 
 /**
  * s_expr_from_symbol - Util method for creating a symbol s-expression
