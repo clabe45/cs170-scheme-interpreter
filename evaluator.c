@@ -361,16 +361,57 @@ struct s_expr *define_(struct fn_arguments *args)
 		set_error_message("define - arity mismatch");
 		return NULL;
 	}
-	struct s_expr *id = args->value;
-	struct s_expr *value = eval_expression(args->next->value);
 
-	if (value == NULL) return NULL;
-	if (id->type != SYMBOL) {
-		set_error_message("define - type error (expected symbol)");
-		return NULL;
+	if (args->value->type == SYMBOL) {
+		struct s_expr *id = args->value;
+		struct s_expr *value = eval_expression(args->next->value);
+
+		if (value == NULL) return NULL;
+		set_env(id->value->symbol, value);
+		return id;
 	}
-	set_env(id->value->symbol, value);
-	return id;
+
+	if (is_list(args->value)) {
+		struct s_expr *id = args->value->value->cell->first;
+		if (id->type != SYMBOL) {
+			set_error_message("define - type error (expected symbol)");
+			return NULL;
+		}
+		struct s_expr *curr_arg = args->value->value->cell->rest;
+		int arg_count = list_length(curr_arg);
+		char **arg_list = (char **) malloc(
+			arg_count * sizeof(char *));
+		int i = 0;
+
+		while (!is_empty_list(curr_arg)) {
+			struct s_expr *tmp = curr_arg->value->cell->first;
+
+			if (tmp->type != CELL) {
+				set_error_message("define - type error (expected symbol)");
+				return NULL;
+			}
+			arg_list[i] = (char *) malloc(
+				(strlen(tmp->value->symbol)+1) * sizeof(char));
+			strcpy(arg_list[i], tmp->value->symbol);
+			curr_arg = curr_arg->value->cell->rest;
+			i++;
+		}
+		struct s_expr *body = args->next->value;
+
+		struct lambda *lmb = (struct lambda *)
+			malloc(sizeof(struct lambda));
+
+		lmb->args = arg_list;
+		lmb->arg_count = arg_count;
+		lmb->body = body;
+		set_env(
+			id->value->symbol,
+			s_expr_from_lambda(lmb));
+		return id;
+	}
+
+	set_error_message("define - type error (expecting symbol or list)");
+	return NULL;
 }
 
 
