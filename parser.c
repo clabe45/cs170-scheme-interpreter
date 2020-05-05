@@ -271,7 +271,7 @@ static void _print_expression(struct s_expr *expr)
 	} else if (expr->type == BOOLEAN) {
 		printf(expr->value->boolean ? "#t" : "#f");
 	} else if (expr->type == LAMBDA) {
-		printf("<lambda>");
+		printf("<lambda %s>", expr->value->lambda->name);
 	} else if (expr->type == BUILTIN) {
 		printf("<built-in function %s>", expr->value->builtin->name);
 	} else {

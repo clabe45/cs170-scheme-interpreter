@@ -348,6 +348,9 @@ struct s_expr *lambda_(struct fn_arguments *args)
 	struct lambda *lmb = (struct lambda *)
 		malloc(sizeof(struct lambda));
 
+	lmb->name = (char *) malloc(
+		(strlen("anonymous")+1) * sizeof(char));
+	strcpy(lmb->name, "anonymous");
 	lmb->args = arg_list;
 	lmb->arg_count = arg_count;
 	lmb->body = body;
@@ -401,6 +404,9 @@ struct s_expr *define_(struct fn_arguments *args)
 		struct lambda *lmb = (struct lambda *)
 			malloc(sizeof(struct lambda));
 
+		lmb->name = (char *) malloc(
+			(strlen(id->value->symbol)+1) * sizeof(char));
+		strcpy(lmb->name, id->value->symbol);
 		lmb->args = arg_list;
 		lmb->arg_count = arg_count;
 		lmb->body = body;

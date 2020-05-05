@@ -11,6 +11,7 @@ const struct cons_cell {
 };
 
 const struct lambda {
+	char *name;
 	char **args;
 	int arg_count;
 	struct s_expr *body;
