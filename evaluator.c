@@ -263,6 +263,23 @@ static struct s_expr *subtract(struct fn_arguments *args)
 	return s_expr_from_integer(difference);
 }
 
+static struct s_expr *multiply(struct fn_arguments *args)
+{
+	int product = 1;
+	struct fn_arguments *arg = args;
+
+	while (arg != NULL) {
+		struct s_expr *val = eval_expression(arg->value);
+		if (val->type != INTEGER) {
+			set_error_message("* - type error (expected integer)");
+			return NULL;
+		}
+		product *= val->value->integer;
+		arg = arg->next;
+	}
+	return s_expr_from_integer(product);
+}
+
 static struct s_expr *is_symbol(struct fn_arguments *args)
 {
 	if (args == NULL || args->next != NULL) {
@@ -507,6 +524,7 @@ void start_evaluator(void)
 	register_builtin_function("cdr", cdr);
 	register_builtin_function("+", add);
 	register_builtin_function("-", subtract);
+	register_builtin_function("*", multiply);
 	register_builtin_function("symbol?", is_symbol);
 	register_builtin_function("equal?", are_equal);
 	register_builtin_function("assoc", assoc);
