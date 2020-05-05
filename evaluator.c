@@ -562,6 +562,7 @@ void start_evaluator(void)
 	register_builtin_function("+", add);
 	register_builtin_function("-", subtract);
 	register_builtin_function("*", multiply);
+	register_builtin_function("not", is_empty);
 	register_builtin_function("and", and);
 	register_builtin_function("or", or);
 	register_builtin_function("symbol?", is_symbol);
