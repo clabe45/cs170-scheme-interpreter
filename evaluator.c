@@ -300,6 +300,22 @@ static struct s_expr *and(struct fn_arguments *args)
 	return val;
 }
 
+static struct s_expr *or(struct fn_arguments *args)
+{
+	// return the first truthy value
+	struct fn_arguments *arg = args;
+
+	while (arg != NULL) {
+		struct s_expr *val = eval_expression(arg->value);
+
+		if (!is_empty_list(val))
+			return val;
+		arg = arg->next;
+	}
+	// no arguments; return #f
+	return s_expr_from_boolean(0);
+}
+
 static struct s_expr *is_symbol(struct fn_arguments *args)
 {
 	if (args == NULL || args->next != NULL) {
@@ -546,6 +562,7 @@ void start_evaluator(void)
 	register_builtin_function("-", subtract);
 	register_builtin_function("*", multiply);
 	register_builtin_function("and", and);
+	register_builtin_function("or", or);
 	register_builtin_function("symbol?", is_symbol);
 	register_builtin_function("equal?", are_equal);
 	register_builtin_function("assoc", assoc);
