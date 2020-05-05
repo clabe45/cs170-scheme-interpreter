@@ -18,7 +18,7 @@
 static struct definition {
 	char *id;
 	struct s_expr *value;
-	struct definition *next;
+	struct definition *prev;
 };
 
 static struct env_state {
@@ -45,7 +45,7 @@ void push_env()
 
 		while (tmp != NULL) {
 			set_env(tmp->id, tmp->value);
-			tmp = tmp->next;
+			tmp = tmp->prev;
 		}
 	}
 	state_stack->prev = prev;
@@ -71,7 +71,7 @@ void set_env(char *id, struct s_expr *value)
 		malloc(sizeof(struct definition));
 	def->id = id;
 	def->value = value;
-	def->next = state_stack->definitions;
+	def->prev = state_stack->definitions;
 	state_stack->definitions = def;
 }
 
@@ -82,7 +82,7 @@ struct s_expr *get_env(char *id)
 	while (curr != NULL) {
 		if (!strcmp(curr->id, id))
 			return curr->value;
-		curr = curr->next;
+		curr = curr->prev;
 	}
 	return NULL;
 }
