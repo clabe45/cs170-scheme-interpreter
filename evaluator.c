@@ -88,6 +88,19 @@ static struct s_expr *list(struct fn_arguments *args)
 	return first;
 }
 
+static struct s_expr *is_list_(struct fn_arguments *args)
+{
+	if (args == NULL || args->next != NULL) {
+		set_error_message("list? - arity mismatch");
+		return NULL;
+	}
+	struct s_expr *val = eval_expression(args->value);
+
+	if (val == NULL) return NULL;
+	return s_expr_from_boolean(
+		is_list(val));
+}
+
 static struct s_expr *is_empty(struct fn_arguments *args)
 {
 	if (args == NULL || args->next != NULL) {
@@ -425,6 +438,7 @@ void start_evaluator(void)
 {
 	register_builtin_function("exit", exit_);
 	register_builtin_function("list", list);
+	register_builtin_function("list?", is_list_);
 	register_builtin_function("empty?", is_empty);
 	register_builtin_function("null?", is_empty);
 	register_builtin_function("append", append);
