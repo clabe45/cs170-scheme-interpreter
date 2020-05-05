@@ -18,11 +18,13 @@
 static struct definition {
 	char *id;
 	struct s_expr *value;
+	struct definition *prev;
 	struct definition *next;
 };
 
 static struct env_state {
-	struct definition *definitions;
+	struct definition *first_definition;
+	struct definition *last_definition;
 	struct env_state *prev;
 };
 
@@ -38,10 +40,11 @@ void push_env()
 	struct env_state *prev = state_stack;
 	state_stack = (struct env_state *) malloc(sizeof(struct env_state));
 
-	state_stack->definitions = NULL;
+	state_stack->first_definition = NULL;
+	state_stack->last_definition = NULL;
 	if (prev != NULL) {
 		// copy parent state's definitions
-		struct definition *tmp = prev->definitions;
+		struct definition *tmp = prev->first_definition;
 
 		while (tmp != NULL) {
 			set_env(tmp->id, tmp->value);
@@ -71,18 +74,25 @@ void set_env(char *id, struct s_expr *value)
 		malloc(sizeof(struct definition));
 	def->id = id;
 	def->value = value;
-	def->next = state_stack->definitions;
-	state_stack->definitions = def;
+	def->prev = state_stack->last_definition;
+	def->next = NULL;
+	if (state_stack->last_definition == NULL) {
+		state_stack->first_definition = def;
+		state_stack->last_definition = def;
+	} else {
+		state_stack->last_definition->next = def;
+		state_stack->last_definition = def;
+	}
 }
 
 struct s_expr *get_env(char *id)
 {
-	struct definition *curr = state_stack->definitions;
+	struct definition *curr = state_stack->last_definition;
 
 	while (curr != NULL) {
 		if (!strcmp(curr->id, id))
 			return curr->value;
-		curr = curr->next;
+		curr = curr->prev;
 	}
 	return NULL;
 }
