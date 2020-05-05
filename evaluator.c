@@ -542,7 +542,8 @@ static struct s_expr *eval_symbol(struct s_expr *expr)
 
 struct s_expr *eval_expression(struct s_expr *expr)
 {
-	if (is_list(expr))
+	// Only 'call' lists, not booleans
+	if (is_list(expr) && expr->type != BOOLEAN)
 		return eval_list(expr);
 	if (expr->type == SYMBOL)
 		return eval_symbol(expr);
