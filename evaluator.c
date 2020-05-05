@@ -289,7 +289,7 @@ static struct s_expr *is_symbol(struct fn_arguments *args)
 	struct s_expr *ls = eval_expression(args->value);
 	if (ls == NULL) return NULL;
 
-	return s_expr_from_boolean(args->value->type == SYMBOL);
+	return s_expr_from_boolean(ls->type == SYMBOL);
 }
 
 static struct s_expr *are_equal(struct fn_arguments *args)
