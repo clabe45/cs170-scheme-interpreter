@@ -280,6 +280,26 @@ static struct s_expr *multiply(struct fn_arguments *args)
 	return s_expr_from_integer(product);
 }
 
+static struct s_expr *and(struct fn_arguments *args)
+{
+	if (args == NULL) {
+		// return #t
+		return s_expr_from_boolean(1);
+	}
+
+	struct fn_arguments *arg = args;
+
+	struct s_expr *val;
+	while (arg != NULL) {
+		val = eval_expression(arg->value);
+
+		if (is_empty_list(val))
+			return s_expr_from_boolean(0);
+		arg = arg->next;
+	}
+	return val;
+}
+
 static struct s_expr *is_symbol(struct fn_arguments *args)
 {
 	if (args == NULL || args->next != NULL) {
@@ -525,6 +545,7 @@ void start_evaluator(void)
 	register_builtin_function("+", add);
 	register_builtin_function("-", subtract);
 	register_builtin_function("*", multiply);
+	register_builtin_function("and", and);
 	register_builtin_function("symbol?", is_symbol);
 	register_builtin_function("equal?", are_equal);
 	register_builtin_function("assoc", assoc);
