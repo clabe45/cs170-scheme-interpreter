@@ -397,7 +397,7 @@ struct s_expr *define_(struct fn_arguments *args)
 		while (!is_empty_list(curr_arg)) {
 			struct s_expr *tmp = curr_arg->value->cell->first;
 
-			if (tmp->type != CELL) {
+			if (tmp->type != SYMBOL) {
 				set_error_message("define - type error (expected symbol)");
 				return NULL;
 			}
