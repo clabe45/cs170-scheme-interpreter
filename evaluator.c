@@ -520,7 +520,7 @@ static struct s_expr *eval_list(struct s_expr *expr)
 				set_error_message("lambda - arity mismatch");
 				return NULL;
 			}
-			set_env(lmb->args[i], arg->value);
+			set_env(lmb->args[i], eval_expression(arg->value));
 			arg = arg->next;
 		}
 		if (arg != NULL) {
